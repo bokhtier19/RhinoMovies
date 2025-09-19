@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
     title: "RhinoMovies",
@@ -21,6 +22,7 @@ export default function RootLayout({
                     <Navbar />
                     {children}
                     <Footer />
+                    <Analytics />
                 </SearchProvider>
             </body>
         </html>
