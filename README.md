@@ -1,40 +1,36 @@
-<<<<<<< HEAD
 # RhinoMovies
-=======
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+RhinoMovies is a modern, responsive movie and TV show web application built with **Next.js** and **React**. It allows users to explore top-rated movies, latest releases, trending content, and TV shows. The app fetches data from **TMDb API** and displays it in an elegant, user-friendly interface.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Browse **Top Rated Movies** and **Top Rated TV Shows**
+- View **Trending Movies & TV Shows**
+- Search for movies and TV shows with live results
+- Movie & TV show details pages with:
+  - Overview
+  - Genres
+  - Release date
+  - Duration (for movies)
+  - Top casts
+  - Rating and like/dislike functionality
+- Infinite scrolling on Top Rated pages
+- Responsive design for desktop, tablet, and mobile
+- Hover previews with titles on movies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Technologies Used
 
-## Learn More
+- **Frontend:** Next.js, React, TypeScript, Tailwind CSS
+- **API:** TMDb (The Movie Database)
+- **Icons:** React Icons
+- **State Management:** React Context API
+- **Hosting:** Vercel (or any Next.js-compatible platform)
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Folder Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
->>>>>>> 32f4f24 (Initial commit from Create Next App)
