@@ -12,6 +12,7 @@ import { IoMdAdd } from "react-icons/io";
 import { BsCameraReelsFill } from "react-icons/bs";
 import { IoThumbsDown, IoThumbsUp } from "react-icons/io5";
 import { fetchCredits, fetchMovieDetails } from "@/services/movies";
+import Loader from "@/components/Loader";
 
 export default function MovieDetailsPage() {
     const { id } = useParams();
@@ -32,18 +33,15 @@ export default function MovieDetailsPage() {
     }, [id]);
 
     if (!movie) {
-        return <div className="flex items-center justify-center h-screen text-white">Loading...</div>;
+        return <Loader />;
     }
 
     return (
         <div
             className="relative min-h-screen w-full bg-cover bg-center"
             style={{
-                backgroundImage: movie.backdrop_path
-                    ? `url(https://image.tmdb.org/t/p/original${movie.backdrop_path})`
-                    : "none",
-            }}
-        >
+                backgroundImage: movie.backdrop_path ? `url(https://image.tmdb.org/t/p/original${movie.backdrop_path})` : "none",
+            }}>
             {/* Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-imdb-black via-imdb-black/90 to-transparent" />
 
@@ -72,41 +70,19 @@ export default function MovieDetailsPage() {
                 <div className="flex gap-6 py-4 px-4">
                     {/* Poster + Like/Dislike */}
                     <div className="w-1/5 flex flex-col items-center gap-4">
-                        <Image
-                            src={
-                                movie.poster_path
-                                    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                                    : "/no-image-available.png"
-                            }
-                            alt={movie.title}
-                            width={225}
-                            height={300}
-                        />
+                        <Image src={movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : "/no-image-available.png"} alt={movie.title} width={225} height={300} />
                         <div className="flex justify-between w-full">
-                            <button
-                                onClick={() => setLiked("up")}
-                                className={`py-1 rounded-sm hover:cursor-pointer  px-2 flex gap-2 ${
-                                    liked === "up" ? "bg-green-600" : "bg-gray-500"
-                                }`}
-                            >
+                            <button onClick={() => setLiked("up")} className={`py-1 rounded-sm hover:cursor-pointer  px-2 flex gap-2 ${liked === "up" ? "bg-green-600" : "bg-gray-500"}`}>
                                 <IoThumbsUp /> Like
                             </button>
-                            <button
-                                onClick={() => setLiked("down")}
-                                className={`py-1 rounded-sm px-2 hover:cursor-pointer  flex gap-2 ${
-                                    liked === "down" ? "bg-red-600" : "bg-gray-500"
-                                }`}
-                            >
+                            <button onClick={() => setLiked("down")} className={`py-1 rounded-sm px-2 hover:cursor-pointer  flex gap-2 ${liked === "down" ? "bg-red-600" : "bg-gray-500"}`}>
                                 <IoThumbsDown /> Dislike
                             </button>
                         </div>
 
                         {/* Rating Bar */}
                         <div className="w-full bg-red-600 h-2 rounded">
-                            <div
-                                className="bg-green-600 h-2 rounded"
-                                style={{ width: `${(movie.vote_average / 10) * 100}%` }}
-                            ></div>
+                            <div className="bg-green-600 h-2 rounded" style={{ width: `${(movie.vote_average / 10) * 100}%` }}></div>
                         </div>
                     </div>
 
@@ -140,10 +116,7 @@ export default function MovieDetailsPage() {
                             <p>Duration: {movie.runtime} min</p>
                             <p>Countries: {movie.production_countries?.map((c: { name: any }) => c.name).join(", ")}</p>
                             <p>Genre: {movie.genres?.map((g) => g.name).join(", ")}</p>
-                            <p>
-                                Production Companies:{" "}
-                                {movie.production_countries?.map((c: { name: any }) => c.name).join(", ")}
-                            </p>
+                            <p>Production Companies: {movie.production_countries?.map((c: { name: any }) => c.name).join(", ")}</p>
                         </div>
 
                         {/* Top Casts */}
@@ -153,11 +126,7 @@ export default function MovieDetailsPage() {
                                 {casts.slice(0, 8).map((cast) => (
                                     <div key={cast.id} className="flex flex-col items-center w-28">
                                         <Image
-                                            src={
-                                                cast.profile_path
-                                                    ? `https://image.tmdb.org/t/p/w200${cast.profile_path}`
-                                                    : "/no-image-available.png"
-                                            }
+                                            src={cast.profile_path ? `https://image.tmdb.org/t/p/w200${cast.profile_path}` : "/no-image-available.png"}
                                             alt={cast.name}
                                             width={100}
                                             height={150}

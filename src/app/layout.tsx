@@ -4,6 +4,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { SearchProvider } from "@/context/SearchContext";
 import { Analytics } from "@vercel/analytics/next";
+import { ThemeProvider } from "next-themes";
+import ScrollToTop from "@/components/ScrollToTop";
 
 export const metadata: Metadata = {
     title: "RhinoMovies",
@@ -18,12 +20,15 @@ export default function RootLayout({
     return (
         <html>
             <body>
-                <SearchProvider>
-                    <Navbar />
-                    {children}
-                    <Footer />
-                    <Analytics />
-                </SearchProvider>
+                <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                    <SearchProvider>
+                        <Navbar />
+                        {children}
+                        <ScrollToTop />
+                        <Footer />
+                        <Analytics />
+                    </SearchProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

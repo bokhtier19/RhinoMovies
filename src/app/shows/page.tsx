@@ -4,6 +4,7 @@ import { TVShow } from "@/interfaces/interface";
 import MovieCard from "@/components/Moviecard";
 import Searchbar from "@/components/Searchbar";
 import { useSearch } from "@/context/SearchContext";
+import Loader from "@/components/Loader";
 
 const API_URL = "https://api.themoviedb.org/3";
 const TMDB_TOKEN = process.env.NEXT_PUBLIC_TMDB_TOKEN as string;
@@ -19,9 +20,7 @@ const options = {
 type PageResp = { results: TVShow[]; total_pages: number };
 
 const fetchTopRatedTVShowsPage = async (page: number, query?: string): Promise<PageResp> => {
-    const url = query?.trim()
-        ? `${API_URL}/search/tv?query=${encodeURIComponent(query)}&language=en-US&page=${page}`
-        : `${API_URL}/tv/top_rated?language=en-US&page=${page}`;
+    const url = query?.trim() ? `${API_URL}/search/tv?query=${encodeURIComponent(query)}&language=en-US&page=${page}` : `${API_URL}/tv/top_rated?language=en-US&page=${page}`;
 
     const res = await fetch(url, options);
     if (!res.ok) throw new Error("Failed to fetch TV shows");
@@ -30,8 +29,7 @@ const fetchTopRatedTVShowsPage = async (page: number, query?: string): Promise<P
 };
 
 // merge and dedupe by id
-const mergeUniqueById = (prev: TVShow[], next: TVShow[]) =>
-    Array.from(new Map([...prev, ...next].map((s) => [s.id, s])).values());
+const mergeUniqueById = (prev: TVShow[], next: TVShow[]) => Array.from(new Map([...prev, ...next].map((s) => [s.id, s])).values());
 
 const TopRatedTVShowsPage = () => {
     const { query } = useSearch();
@@ -99,9 +97,7 @@ const TopRatedTVShowsPage = () => {
         <div className="px-4 md:px-8 lg:px-16 py-8 bg-imdb-black min-h-screen">
             <Searchbar />
 
-            <h1 className="text-2xl font-bold text-imdb-white mb-6">
-                {query?.trim() ? `Results for "${query}"` : "Top Rated TV Shows"}
-            </h1>
+            <h1 className="text-2xl font-bold text-imdb-white mb-6">{query?.trim() ? `Results for "${query}"` : "Top Rated TV Shows"}</h1>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-6">
                 {shows.map((show, i) => {
@@ -117,10 +113,8 @@ const TopRatedTVShowsPage = () => {
                 })}
             </div>
 
-            {loading && <p className="text-imdb-white text-center mt-4">Loading more…</p>}
-            {totalPages && page >= totalPages && !loading && (
-                <p className="text-imdb-white text-center mt-4">No more shows to load</p>
-            )}
+            {loading && <Loader />}
+            {totalPages && page >= totalPages && !loading && <p className="text-imdb-white text-center mt-4">No more shows to load</p>}
         </div>
     );
 };

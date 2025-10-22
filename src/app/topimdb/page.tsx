@@ -4,6 +4,7 @@ import { Movie, TVShow } from "@/interfaces/interface";
 import MovieCard from "@/components/Moviecard";
 import Searchbar from "@/components/Searchbar";
 import { useSearch } from "@/context/SearchContext";
+import Loader from "@/components/Loader";
 
 const API_URL = "https://api.themoviedb.org/3";
 const TMDB_TOKEN = process.env.NEXT_PUBLIC_TMDB_TOKEN;
@@ -17,9 +18,7 @@ const options = {
 };
 
 async function fetchTopRatedMovies(page: number, query?: string): Promise<Movie[]> {
-    const url = query
-        ? `${API_URL}/search/movie?query=${encodeURIComponent(query)}&language=en-US&page=${page}`
-        : `${API_URL}/movie/top_rated?language=en-US&page=${page}`;
+    const url = query ? `${API_URL}/search/movie?query=${encodeURIComponent(query)}&language=en-US&page=${page}` : `${API_URL}/movie/top_rated?language=en-US&page=${page}`;
 
     const res = await fetch(url, options);
     if (!res.ok) throw new Error("Failed to fetch top-rated movies");
@@ -28,9 +27,7 @@ async function fetchTopRatedMovies(page: number, query?: string): Promise<Movie[
 }
 
 async function fetchTopRatedTVShows(page: number, query?: string): Promise<TVShow[]> {
-    const url = query
-        ? `${API_URL}/search/tv?query=${encodeURIComponent(query)}&language=en-US&page=${page}`
-        : `${API_URL}/tv/top_rated?language=en-US&page=${page}`;
+    const url = query ? `${API_URL}/search/tv?query=${encodeURIComponent(query)}&language=en-US&page=${page}` : `${API_URL}/tv/top_rated?language=en-US&page=${page}`;
 
     const res = await fetch(url, options);
     if (!res.ok) throw new Error("Failed to fetch top-rated TV shows");
@@ -125,10 +122,8 @@ const TopRatedPage = () => {
 
             {/* Top Movies Section */}
             <section>
-                <h1 className="text-2xl font-bold text-imdb-white mb-4">
-                    {query ? `Movie Results for "${query}"` : "Top Rated Movies"}
-                </h1>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                <h1 className="text-2xl font-bold text-imdb-white mb-4">{query ? `Movie Results for "${query}"` : "Top Rated Movies"}</h1>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
                     {movies.map((movie, index) => {
                         if (index === movies.length - 1) {
                             return (
@@ -140,14 +135,12 @@ const TopRatedPage = () => {
                         return <MovieCard key={`movie-${movie.id}`} {...movie} />;
                     })}
                 </div>
-                {movieLoading && <p className="text-imdb-white text-center mt-4">Loading more movies...</p>}
+                {movieLoading && <Loader />}
             </section>
 
             {/* Top TV Shows Section */}
             <section>
-                <h1 className="text-2xl font-bold text-imdb-white mb-4">
-                    {query ? `TV Show Results for "${query}"` : "Top Rated TV Shows"}
-                </h1>
+                <h1 className="text-2xl font-bold text-imdb-white mb-4">{query ? `TV Show Results for "${query}"` : "Top Rated TV Shows"}</h1>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                     {shows.map((show, index) => {
                         if (index === shows.length - 1) {

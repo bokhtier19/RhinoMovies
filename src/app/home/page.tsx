@@ -6,6 +6,7 @@ import { LatestMovies, UpcomingMovies } from "@/services/movies";
 import { TrendingMoviesAndShows } from "@/services/api";
 import { LatestTVShows } from "@/services/tv";
 import MovieCard from "@/components/Moviecard";
+import Loader from "@/components/Loader";
 
 const HomePage = () => {
     const [trending, setTrending] = useState<(Movie | TVShow)[]>([]);
@@ -27,14 +28,14 @@ const HomePage = () => {
     }, []);
 
     if (loading) {
-        return <div className="text-white text-center py-10">Loading...</div>;
+        return <Loader />;
     }
 
     return (
-        <div className="px-2 md:px-8 lg:px-16 py-8 bg-imdb-black min-h-screen flex flex-col gap-8">
+        <div className="px-2 md:px-8 lg:px-16 py-8  min-h-screen flex flex-col gap-8">
             {/* Trending */}
             <section>
-                <p className="text-md text-imdb-white uppercase mb-4">Trending Movies & TV Shows</p>
+                <p className="text-lg text-imdb-yellow uppercase mb-4">Trending Movies & TV Shows</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
                     {trending.map((item) => (
                         <MovieCard key={`movie-${item.id}`} {...item} />
@@ -44,7 +45,7 @@ const HomePage = () => {
 
             {/* Latest Movies */}
             <section>
-                <p className="text-md text-imdb-white uppercase mb-4">Latest Movies</p>
+                <p className="text-lg text-imdb-yellow uppercase mb-4">Latest Movies</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
                     {latestMovies.map((movie) => (
                         <MovieCard key={movie.id} {...movie} />
@@ -54,7 +55,7 @@ const HomePage = () => {
 
             {/* Latest TV Shows */}
             <section>
-                <p className="text-md text-imdb-white uppercase mb-4">Latest TV Shows</p>
+                <p className="text-lg text-imdb-yellow uppercase mb-4">Latest TV Shows</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
                     {latestShows.map((show) => (
                         <MovieCard key={show.id} {...show} />
@@ -64,7 +65,7 @@ const HomePage = () => {
 
             {/*  Upcoming Movies */}
             <section>
-                <p className="text-md text-imdb-white uppercase mb-4">Upcoming Movies</p>
+                <p className="text-lg text-imdb-yellow uppercase mb-4">Upcoming Movies</p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
                     {upcomingMovies.map((show) => (
                         <MovieCard key={show.id} {...show} />

@@ -1,36 +1,61 @@
 @import "tailwindcss";
 
+/* LIGHT THEME (Default) */
 :root {
     --background: #ffffff;
     --foreground: #0a0a0a;
+
+    /* IMDb Brand Palette */
+    --imdb-yellow: #f5c518;
+    --imdb-black: #121212;
+    --imdb-blue: #1f80e0;
+    --imdb-gray: #0a0a0a;
+    --imdb-white: #ffffff;
+    --imdb-lightgray: #e5e5e5;
+    --imdb-border: #333333;
+    --imdb-card: #1a1a1a;
 }
 
+/* DARK THEME */
+[data-theme="dark"] {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+
+    --imdb-card: #1a1a1a;
+    --imdb-border: #444444;
+}
+
+/*  TAILWIND THEME BINDINGS */
 @theme inline {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
+    --color-imdb-yellow: var(--imdb-yellow);
+    --color-imdb-black: var(--imdb-black);
+    --color-imdb-blue: var(--imdb-blue);
+    --color-imdb-gray: var(--imdb-gray);
+    --color-imdb-white: var(--imdb-white);
+    --color-imdb-lightgray: var(--imdb-lightgray);
+    --color-imdb-border: var(--imdb-border);
+    --color-imdb-card: var(--imdb-card);
+
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
-
-    /* 🎬 IMDb Brand Palette */
-    --color-imdb-yellow: #f5c518; /* Gold */
-    --color-imdb-black: #121212; /* Deep Black */
-    --color-imdb-blue: #1f80e0; /* Accent Blue */
-    --color-imdb-gray: #0a0a0a; /* Dark Gray BG */
-    --color-imdb-white: #ffffff; /* Pure White */
-    --color-imdb-lightgray: #e5e5e5; /* Muted text */
-    --color-imdb-border: #333333; /* Borders / dividers */
-    --color-imdb-card: #1a1a1a; /* Card background */
 }
 
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #0a0a0a;
-        --foreground: #ededed;
-    }
-}
-
+/*  BASE STYLES */
 body {
-    background: var(--background);
-    color: var(--foreground);
-    font-family: Arial, Helvetica, sans-serif;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    scroll-behavior: smooth;
+}
+
+/* Hide scrollbar for all browsers */
+::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+html,
+body {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
 }
