@@ -28,9 +28,7 @@ RhinoMovies is a modern, responsive movie and TV show web application built with
 - **API:** TMDb (The Movie Database)
 - **Icons:** React Icons
 - **State Management:** React Context API
-- **Hosting:** Vercel (or any Next.js-compatible platform)
+- **Hosting:** Vercel (or any Next. Next.js-compatible platform)
 
 ---
-
-## Folder Structure
 
