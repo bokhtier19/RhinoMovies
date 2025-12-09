@@ -30,12 +30,12 @@ const Navbar = () => {
     });
 
     return (
-        <nav className={` sticky top-0 z-50 bg-imdb-border py-2 text-white dark:bg-gray-900 shadow-2xl ${isVisible ? "-translate-y-full" : "-translate-y-0"} transition-transform duration-300`}>
-            <div className="flex justify-between items-center px-4 max-w-[90%] mx-auto">
+        <nav className={` sticky top-0 z-50 bg-imdb-border py-1 text-white dark:bg-gray-900 shadow-2xl ${isVisible ? "-translate-y-full" : "-translate-y-0"} transition-transform duration-300`}>
+            <div className="flex justify-between items-center px-4 py-2 max-w-[90%] mx-auto">
                 {/* Logo */}
                 <Link href={"/"} className="flex items-center gap-2">
                     <PiFilmReelFill size={36} className="text-imdb-yellow" />
-                    <h1 className="text-imdb-yellow font-bold uppercase text-lg">RhinoMovies</h1>
+                    <p className="text-imdb-yellow font-bold uppercase text-lg">RhinoMovies</p>
                 </Link>
 
                 {/* Desktop Menu */}
@@ -58,9 +58,6 @@ const Navbar = () => {
                     <Link className="hover:cursor-pointer hover:text-imdb-yellow" href={"/topimdb"}>
                         Top IMDB
                     </Link>
-                    {/* <Link className="hover:cursor-pointer hover:text-imdb-yellow" href={"/movies"}>
-                        Android App
-                        </Link> */}
                 </div>
 
                 {/* Actions */}
