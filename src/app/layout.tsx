@@ -10,6 +10,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 export const metadata: Metadata = {
     title: "RhinoMovies",
     description: "Discover Movies and TV Shows Online for Free | RhinoMovies",
+    icons: "/reel.png",
 };
 
 export default function RootLayout({
