@@ -1,10 +1,10 @@
 "use client";
-import { useSearch } from "@/context/SearchContext";
-import React, { useEffect, useState } from "react";
-import { MdOutlineSearch } from "react-icons/md";
+import {useSearch} from "@/src/context/SearchContext";
+import React, {useEffect, useState} from "react";
+import {MdOutlineSearch} from "react-icons/md";
 
 const Searchbar = () => {
-    const { query, setQuery } = useSearch();
+    const {query, setQuery} = useSearch();
     const [input, setInput] = useState(query);
 
     useEffect(() => {

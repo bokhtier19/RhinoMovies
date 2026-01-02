@@ -1,162 +1,101 @@
 "use client";
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import { Movie, TVShow } from "@/interfaces/interface";
-import MovieCard from "@/components/Moviecard";
-import Searchbar from "@/components/Searchbar";
-import { useSearch } from "@/context/SearchContext";
-import Loader from "@/components/Loader";
 
-const API_URL = "https://api.themoviedb.org/3";
-const TMDB_TOKEN = process.env.NEXT_PUBLIC_TMDB_TOKEN;
+import {useEffect, useState} from "react";
+import MovieCard from "@/src/components/MovieCard";
+import Searchbar from "@/src/components/Searchbar";
+import Pagination from "@/src/components/Pagination";
+import {Movie} from "@/src/types/interface";
+import {useSearch} from "@/src/context/SearchContext";
 
-const options = {
-    method: "GET",
-    headers: {
-        accept: "application/json",
-        Authorization: `Bearer ${TMDB_TOKEN}`,
-    },
+type ApiResponse = {
+    results: Movie[];
+    total_pages: number;
 };
 
-async function fetchTopRatedMovies(page: number, query?: string): Promise<Movie[]> {
-    const url = query ? `${API_URL}/search/movie?query=${encodeURIComponent(query)}&language=en-US&page=${page}` : `${API_URL}/movie/top_rated?language=en-US&page=${page}`;
+export default function TopRatedMoviesPage() {
+    const {query} = useSearch();
 
-    const res = await fetch(url, options);
-    if (!res.ok) throw new Error("Failed to fetch top-rated movies");
-    const data = await res.json();
-    return data.results;
-}
-
-async function fetchTopRatedTVShows(page: number, query?: string): Promise<TVShow[]> {
-    const url = query ? `${API_URL}/search/tv?query=${encodeURIComponent(query)}&language=en-US&page=${page}` : `${API_URL}/tv/top_rated?language=en-US&page=${page}`;
-
-    const res = await fetch(url, options);
-    if (!res.ok) throw new Error("Failed to fetch top-rated TV shows");
-    const data = await res.json();
-    return data.results;
-}
-
-const TopRatedPage = () => {
-    const { query } = useSearch();
-
-    // Movies state
     const [movies, setMovies] = useState<Movie[]>([]);
-    const [moviePage, setMoviePage] = useState(1);
-    const [movieHasMore, setMovieHasMore] = useState(true);
-    const [movieLoading, setMovieLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    // TV Shows state
-    const [shows, setShows] = useState<TVShow[]>([]);
-    const [showPage, setShowPage] = useState(1);
-    const [showHasMore, setShowHasMore] = useState(true);
-    const [showLoading, setShowLoading] = useState(false);
-
-    const movieObserver = useRef<IntersectionObserver | null>(null);
-    const showObserver = useRef<IntersectionObserver | null>(null);
-
-    const lastMovieRef = useCallback(
-        (node: HTMLDivElement | null) => {
-            if (movieLoading) return;
-            if (movieObserver.current) movieObserver.current.disconnect();
-            movieObserver.current = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && movieHasMore) {
-                    setMoviePage((prev) => prev + 1);
-                }
-            });
-            if (node) movieObserver.current.observe(node);
-        },
-        [movieLoading, movieHasMore]
-    );
-
-    const lastShowRef = useCallback(
-        (node: HTMLDivElement | null) => {
-            if (showLoading) return;
-            if (showObserver.current) showObserver.current.disconnect();
-            showObserver.current = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting && showHasMore) {
-                    setShowPage((prev) => prev + 1);
-                }
-            });
-            if (node) showObserver.current.observe(node);
-        },
-        [showLoading, showHasMore]
-    );
-
-    // Reset results when search query changes
+    // Reset pagination when search changes
     useEffect(() => {
-        setMovies([]);
-        setMoviePage(1);
-        setMovieHasMore(true);
-        setShows([]);
-        setShowPage(1);
-        setShowHasMore(true);
+        setPage(1);
     }, [query]);
 
-    // Fetch movies
+    // Fetch movies (SINGLE source of truth)
     useEffect(() => {
-        setMovieLoading(true);
-        fetchTopRatedMovies(moviePage, query)
-            .then((data) => {
-                setMovies((prev) => [...prev, ...data]);
-                if (data.length === 0) setMovieHasMore(false);
-            })
-            .catch(console.error)
-            .finally(() => setMovieLoading(false));
-    }, [moviePage, query]);
+        const controller = new AbortController();
 
-    // Fetch TV shows
-    useEffect(() => {
-        setShowLoading(true);
-        fetchTopRatedTVShows(showPage, query)
-            .then((data) => {
-                setShows((prev) => [...prev, ...data]);
-                if (data.length === 0) setShowHasMore(false);
-            })
-            .catch(console.error)
-            .finally(() => setShowLoading(false));
-    }, [showPage, query]);
+        const fetchMovies = async () => {
+            setLoading(true);
+            setError(null);
+
+            try {
+                const params = new URLSearchParams({
+                    page: String(page)
+                });
+
+                if (query?.trim()) {
+                    params.set("query", query);
+                }
+
+                const res = await fetch(`/api/movies?${params.toString()}`, {
+                    signal: controller.signal
+                });
+
+                if (!res.ok) {
+                    throw new Error("Failed to fetch movies");
+                }
+
+                const data: ApiResponse = await res.json();
+
+                setMovies(data.results);
+                setTotalPages(data.total_pages);
+            } catch (err: any) {
+                if (err.name !== "AbortError") {
+                    console.error(err);
+                    setError("Something went wrong while loading movies.");
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMovies();
+
+        return () => controller.abort();
+    }, [page, query]);
 
     return (
-        <div className="px-4 md:px-8 lg:px-16 py-8 bg-imdb-black min-h-screen flex flex-col gap-8">
-            {/* Search bar */}
+        <div className="px-4 md:px-8 lg:px-16 py-8 bg-imdb-black min-h-screen">
             <Searchbar />
 
-            {/* Top Movies Section */}
-            <section>
-                <h1 className="text-2xl font-bold text-imdb-white mb-4">{query ? `Movie Results for "${query}"` : "Top Rated Movies"}</h1>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
-                    {movies.map((movie, index) => {
-                        if (index === movies.length - 1) {
-                            return (
-                                <div key={movie.id} ref={lastMovieRef}>
-                                    <MovieCard {...movie} />
-                                </div>
-                            );
-                        }
-                        return <MovieCard key={`movie-${movie.id}`} {...movie} />;
-                    })}
-                </div>
-                {movieLoading && <Loader />}
-            </section>
+            <h1 className="text-2xl font-bold text-imdb-white mb-6">{query?.trim() ? `Results for "${query}"` : "Top Rated Movies"}</h1>
 
-            {/* Top TV Shows Section */}
-            <section>
-                <h1 className="text-2xl font-bold text-imdb-white mb-4">{query ? `TV Show Results for "${query}"` : "Top Rated TV Shows"}</h1>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                    {shows.map((show, index) => {
-                        if (index === shows.length - 1) {
-                            return (
-                                <div key={show.id} ref={lastShowRef}>
-                                    <MovieCard key={`tv-${show.id}`} {...show} />
-                                </div>
-                            );
-                        }
-                        return <MovieCard key={show.id} {...show} />;
-                    })}
+            {/* Error */}
+            {error && <p className="text-red-400 text-center mb-6">{error}</p>}
+
+            {/* Loading */}
+            {loading && <p className="text-imdb-white text-center mb-6">Loading…</p>}
+
+            {/* Movies Grid */}
+            {!loading && movies.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-6">
+                    {movies.map((movie) => (
+                        <MovieCard key={movie.id} {...movie} />
+                    ))}
                 </div>
-                {showLoading && <p className="text-imdb-white text-center mt-4">Loading more TV shows...</p>}
-            </section>
+            )}
+
+            {/* Empty State */}
+            {!loading && movies.length === 0 && !error && <p className="text-imdb-white text-center mt-10">No movies found.</p>}
+
+            {/* Pagination UI */}
+            {!loading && totalPages > 1 && <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />}
         </div>
     );
-};
-
-export default TopRatedPage;
+}

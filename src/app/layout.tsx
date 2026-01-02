@@ -1,20 +1,20 @@
-import type { Metadata } from "next";
+import type {Metadata} from "next";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { SearchProvider } from "@/context/SearchContext";
-import { Analytics } from "@vercel/analytics/next";
-import { ThemeProvider } from "next-themes";
-import ScrollToTop from "@/components/ScrollToTop";
+import Navbar from "@/src/components/Navbar";
+import Footer from "@/src/components/Footer";
+import {SearchProvider} from "@/src/context/SearchContext";
+import {Analytics} from "@vercel/analytics/next";
+import {ThemeProvider} from "next-themes";
+import ScrollToTop from "@/src/components/ScrollToTop";
 
 export const metadata: Metadata = {
     title: "RhinoMovies",
     description: "Discover Movies and TV Shows Online for Free | RhinoMovies",
-    icons: "/reel.png",
+    icons: "/reel.png"
 };
 
 export default function RootLayout({
-    children,
+    children
 }: Readonly<{
     children: React.ReactNode;
 }>) {
