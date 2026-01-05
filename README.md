@@ -1,6 +1,6 @@
 # 🦏 RhinoMovies
 
-[![Demo](https://img.shields.io/badge/demo-live-blue?style=flat)](https://bokhtier.online)
+[![Demo](https://img.shields.io/badge/demo-live-blue?style=flat)](https://rhino-movies.vercel.app)
 [![Framework](https://img.shields.io/badge/framework-Next.js-black?style=flat)](https://nextjs.org/)
 [![Language](https://img.shields.io/badge/language-TypeScript-3178c6?style=flat)](https://www.typescriptlang.org/)
 [![Styling](https://img.shields.io/badge/styling-Tailwind_CSS-38bdf8?style=flat)](https://tailwindcss.com/)
@@ -42,7 +42,7 @@ Table of Contents
 
 🎬 Demo
 
-> https://bokhtier.online
+> https://rhino-movies.vercel.app
 
 ---
 
