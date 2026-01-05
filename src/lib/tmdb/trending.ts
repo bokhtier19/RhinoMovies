@@ -1,5 +1,6 @@
-import {tmdbFetch} from "./client";
-import {Movie, TVShow} from "@/types/common";
+import { tmdbFetch } from "./client";
+import { Movie } from "@/src/types/movie";
+import { TVShow } from "@/src/types/tv";
 
 type TrendingResponse = {
     results: (Movie | TVShow)[];
@@ -8,7 +9,7 @@ type TrendingResponse = {
 export function getTrendingAll() {
     return tmdbFetch<TrendingResponse>("/trending/all/day", {
         params: {
-            language: "en-US"
-        }
+            language: "en-US",
+        },
     });
 }
