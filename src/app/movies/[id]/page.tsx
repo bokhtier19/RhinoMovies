@@ -109,18 +109,21 @@ export default async function MovieDetailsPage({ params }: PageProps) {
 
                         {/* Poster + rating */}
                         <div className="self-start sm:row-span-2">
-                            <Image
-                                src={
-                                    movie.poster_path
-                                        ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                                        : "https://via.placeholder.com/500x750?text=No+Image"
-                                }
-                                alt={`${movie.title} poster`}
-                                width={200}
-                                height={300}
-                                priority
-                                className="w-full rounded-lg shadow-xl"
-                            />
+                            {movie.poster_path ? (
+                                <Image
+                                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                                    alt={`${movie.title} poster`}
+                                    width={200}
+                                    height={300}
+                                    priority
+                                    className="w-full rounded-lg shadow-xl"
+                                />
+                            ) : (
+                                <div className="flex w-full aspect-[2/3] flex-col items-center justify-center gap-3 rounded-lg shadow-xl" style={{ backgroundColor: "var(--surface)", color: "var(--muted)" }}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                                    <span className="text-xs font-medium text-center px-4 leading-snug">Poster Not Available</span>
+                                </div>
+                            )}
                             <div className="mt-2 h-1.5 w-full rounded-full" style={{ backgroundColor: "var(--detail-track-bg)" }}>
                                 <div
                                     className="h-1.5 rounded-full bg-green-600"

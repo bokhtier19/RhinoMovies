@@ -29,7 +29,14 @@ const MovieCard: React.FC<MovieCardProps> = ({id, title, name, poster_path, rele
         <Link href={href}>
             <div className="w-full rounded-sm overflow-hidden hover:scale-105 transition-all" style={{ backgroundColor: "var(--card)" }}>
                 <div className="relative w-full h-64">
-                    <Image src={poster_path ? `https://image.tmdb.org/t/p/w500${poster_path}` : "https://via.placeholder.com/500x750?text=No+Image"} alt={displayTitle} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 176px" className="object-cover" />
+                    {poster_path ? (
+                        <Image src={`https://image.tmdb.org/t/p/w500${poster_path}`} alt={displayTitle} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 176px" className="object-cover" />
+                    ) : (
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-2" style={{ backgroundColor: "var(--surface)", color: "var(--muted)" }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                            <span className="text-xs font-medium text-center px-2 leading-tight" style={{ color: "var(--muted)" }}>Poster Not Available</span>
+                        </div>
+                    )}
                 </div>
 
                 <div className="p-2">

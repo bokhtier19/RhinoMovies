@@ -95,3 +95,31 @@ export function getNowPlayingMovies(page = 2) {
         }
     });
 }
+
+/**
+ * Movies by genre
+ */
+export function getMoviesByGenre(genreId: number, page = 1) {
+    return tmdbFetch<PaginatedResponse<Movie>>("/discover/movie", {
+        params: {
+            with_genres: genreId,
+            page,
+            language: "en-US",
+            sort_by: "popularity.desc"
+        }
+    });
+}
+
+/**
+ * Movies by country (ISO 3166-1 code)
+ */
+export function getMoviesByCountry(countryCode: string, page = 1) {
+    return tmdbFetch<PaginatedResponse<Movie>>("/discover/movie", {
+        params: {
+            with_origin_country: countryCode,
+            page,
+            language: "en-US",
+            sort_by: "popularity.desc"
+        }
+    });
+}

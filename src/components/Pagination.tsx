@@ -17,10 +17,15 @@ export default function Pagination({page, totalPages, onPageChange, maxVisible =
 
     const pages = Array.from({length: end - start + 1}, (_, i) => start + i);
 
+    const changePage = (p: number) => {
+        onPageChange(p);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
     return (
         <div className="flex items-center justify-center gap-4 mt-10 flex-wrap">
             {/* Prev */}
-            <button disabled={page === 1} onClick={() => onPageChange(page - 1)} className="px-4 py-2 hover:cursor-pointer rounded flex gap-2 items-center disabled:opacity-40" style={{ backgroundColor: "var(--surface)", color: "var(--foreground)" }}>
+            <button disabled={page === 1} onClick={() => changePage(page - 1)} className="px-4 py-2 hover:cursor-pointer rounded flex gap-2 items-center disabled:opacity-40" style={{ backgroundColor: "var(--surface)", color: "var(--foreground)" }}>
                 <FaLongArrowAltLeft />
                 Prev
             </button>
@@ -29,9 +34,13 @@ export default function Pagination({page, totalPages, onPageChange, maxVisible =
             {pages.map((p) => (
                 <button
                     key={p}
-                    onClick={() => onPageChange(p)}
-                    className={`px-3 py-2 hover:cursor-pointer rounded-full ${p === page ? "bg-imdb-yellow text-black font-bold" : ""}`}
-                    style={p !== page ? { backgroundColor: "var(--surface)", color: "var(--foreground)" } : undefined}>
+                    onClick={() => changePage(p)}
+                    className="px-3 py-2 hover:cursor-pointer rounded-full font-bold"
+                    style={
+                        p === page
+                            ? { backgroundColor: "#f5c518", color: "#000" }
+                            : { backgroundColor: "var(--surface)", color: "var(--foreground)" }
+                    }>
                     {p}
                 </button>
             ))}
@@ -39,7 +48,7 @@ export default function Pagination({page, totalPages, onPageChange, maxVisible =
             {/* Next */}
             <button
                 disabled={page === totalPages}
-                onClick={() => onPageChange(page + 1)}
+                onClick={() => changePage(page + 1)}
                 className="px-4 py-2 hover:cursor-pointer rounded flex gap-2 items-center disabled:opacity-40"
                 style={{ backgroundColor: "var(--surface)", color: "var(--foreground)" }}>
                 Next
