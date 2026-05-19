@@ -1,44 +1,41 @@
 "use client";
 import React, { useEffect, useState } from "react";
-
 import { BiSolidArrowToTop } from "react-icons/bi";
+
+const BOTTOM_THRESHOLD = 400;
 
 const ScrollToTop = () => {
     const [isVisible, setIsVisible] = useState(false);
 
-    const setVisibility = () => {
-        if (window.pageYOffset > 300) {
-            setIsVisible(true);
-        } else {
-            setIsVisible(false);
-        }
-    };
-
-    const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth",
-        });
-    };
-
     useEffect(() => {
-        window.addEventListener("scroll", setVisibility);
-        return () => {
-            window.removeEventListener("scroll", setVisibility);
+        const onScroll = () => {
+            const nearBottom =
+                window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - BOTTOM_THRESHOLD;
+            setIsVisible(nearBottom);
         };
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
     }, []);
 
+    const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
     return (
-        <div>
-            {isVisible && (
-                <button
-                    onClick={scrollToTop}
-                    className="fixed bottom-20 right-20 z-20 p-2 hover:cursor-pointer rounded-full text-imdb-yellow transition-opacity duration-300"
-                    style={{ backgroundColor: "var(--surface)" }}>
-                    <BiSolidArrowToTop size={35} />
-                </button>
-            )}
-        </div>
+        <button
+            onClick={scrollToTop}
+            aria-label="Back to top"
+            className="fixed right-5 bottom-8 z-40 flex flex-col items-center gap-1 rounded-full p-3 shadow-lg hover:cursor-pointer transition-all duration-300"
+            style={{
+                backgroundColor: "#111111",
+                border: "1px solid #f5c518",
+                color: "#f5c518",
+                opacity: isVisible ? 1 : 0,
+                pointerEvents: isVisible ? "auto" : "none",
+                transform: isVisible ? "translateY(0)" : "translateY(12px)",
+            }}
+        >
+            <BiSolidArrowToTop size={22} />
+        </button>
     );
 };
 

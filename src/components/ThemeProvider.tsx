@@ -13,8 +13,15 @@ export function ModeToggle() {
     const {theme, setTheme} = useTheme();
 
     return (
-        <button onClick={() => setTheme(() => (theme === "dark" ? "light" : "dark"))} className="p-2 rounded-md hover:cursor-pointer hover:text-imdb-yellow transition-colors">
-            {theme === "dark" ? <IoSunnyOutline className="" size={20} /> : <IoMoonOutline className="" size={20} />}
+        <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="rounded-lg p-2 transition-colors hover:cursor-pointer"
+            style={{ color: "#ffffff", background: "rgba(255,255,255,0.08)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#f5c518")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#ffffff")}
+            aria-label="Toggle theme"
+        >
+            {theme === "dark" ? <IoSunnyOutline size={20} /> : <IoMoonOutline size={20} />}
         </button>
     );
 }

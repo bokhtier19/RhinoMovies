@@ -2,21 +2,13 @@
 
 /* LIGHT THEME */
 :root {
-    --background: #ffffff;
+    --background: #f2f2f2;
     --foreground: #0a0a0a;
-    --card: #f4f4f4;
+    --card: #e8e8e8;
     --muted: #737373;
-    --surface: #e8e8e8;
-    --surface-hover: #d4d4d4;
-    --border: #e0e0e0;
-
-    /* Navbar */
-    --nav-bg: #1f1f1f;
-    --nav-fg: #ffffff;
-    --nav-dropdown-bg: #ffffff;
-    --nav-dropdown-fg: #1a1a1a;
-    --nav-mobile-bg: #f4f4f4;
-    --nav-mobile-fg: #0a0a0a;
+    --surface: #dcdcdc;
+    --surface-hover: #cecece;
+    --border: #d0d0d0;
 
     /* Brand — always fixed */
     --imdb-yellow: #f5c518;
@@ -24,6 +16,20 @@
     --imdb-blue: #1f80e0;
     --imdb-border: #333333;
     --imdb-lightgray: #e5e5e5;
+
+    /* Detail page — light (cream) variant */
+    --detail-bg:              #fef6dc;
+    --detail-bg-transparent:  rgba(254, 246, 220, 0);
+    --detail-title:           #1a1200;
+    --detail-body:            #4a3c20;
+    --detail-muted:           #6b5530;
+    --detail-meta-value:      #2a1e08;
+    --detail-accent:          #c9960a;
+    --detail-tag-bg:          rgba(0, 0, 0, 0.07);
+    --detail-tag-border:      rgba(0, 0, 0, 0.15);
+    --detail-track-bg:        rgba(0, 0, 0, 0.12);
+    --detail-btn-border:      rgba(0, 0, 0, 0.2);
+    --detail-btn-color:       #1a1200;
 }
 
 /* DARK THEME — next-themes sets class="dark" on <html> */
@@ -36,13 +42,19 @@
     --surface-hover: #3a3a3a;
     --border: #333333;
 
-    /* Navbar */
-    --nav-bg: #1a1a1a;
-    --nav-fg: #ffffff;
-    --nav-dropdown-bg: #2b2b2b;
-    --nav-dropdown-fg: #e0e0e0;
-    --nav-mobile-bg: #111111;
-    --nav-mobile-fg: #ffffff;
+    /* Detail page — dark variant */
+    --detail-bg:              #0a0a0a;
+    --detail-bg-transparent:  rgba(10, 10, 10, 0);
+    --detail-title:           #ededed;
+    --detail-body:            #a3a3a3;
+    --detail-muted:           #737373;
+    --detail-meta-value:      #d4d4d4;
+    --detail-accent:          #f5c518;
+    --detail-tag-bg:          rgba(255, 255, 255, 0.08);
+    --detail-tag-border:      rgba(255, 255, 255, 0.18);
+    --detail-track-bg:        rgba(255, 255, 255, 0.1);
+    --detail-btn-border:      rgba(255, 255, 255, 0.25);
+    --detail-btn-color:       #ededed;
 }
 
 /* TAILWIND v4 COLOR BINDINGS */
@@ -55,13 +67,6 @@
     --color-surface-hover: var(--surface-hover);
     --color-border: var(--border);
 
-    --color-nav-bg: var(--nav-bg);
-    --color-nav-fg: var(--nav-fg);
-    --color-nav-dropdown-bg: var(--nav-dropdown-bg);
-    --color-nav-dropdown-fg: var(--nav-dropdown-fg);
-    --color-nav-mobile-bg: var(--nav-mobile-bg);
-    --color-nav-mobile-fg: var(--nav-mobile-fg);
-
     --color-imdb-yellow: var(--imdb-yellow);
     --color-imdb-black: var(--imdb-black);
     --color-imdb-blue: var(--imdb-blue);
@@ -70,6 +75,13 @@
 
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
+}
+
+/* CURSOR */
+button,
+a,
+[role="button"] {
+    cursor: pointer;
 }
 
 /* BASE STYLES */
