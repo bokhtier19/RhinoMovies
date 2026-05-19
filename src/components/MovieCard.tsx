@@ -29,7 +29,7 @@ const MovieCard: React.FC<MovieCardProps> = ({id, title, name, poster_path, rele
         <Link href={href}>
             <div className="w-44 flex-shrink-0 rounded-sm overflow-hidden hover:scale-105 transition-all">
                 <div className="relative w-full h-64">
-                    <Image src={poster_path ? `https://image.tmdb.org/t/p/w500${poster_path}` : "/no-image-available.png"} alt={displayTitle} fill sizes="40" className="object-cover" />
+                    <Image src={poster_path ? `https://image.tmdb.org/t/p/w500${poster_path}` : "https://via.placeholder.com/500x750?text=No+Image"} alt={displayTitle} fill sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 176px" className="object-cover" />
                 </div>
 
                 <div className="p-2">

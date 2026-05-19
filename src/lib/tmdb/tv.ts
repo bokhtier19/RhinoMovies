@@ -34,8 +34,7 @@ export function getTVShowById(id: string) {
     return tmdbFetch<TVShowDetails>(`/tv/${id}`, {
         params: {
             language: "en-US"
-        },
-        cache: "no-store"
+        }
     });
 }
 

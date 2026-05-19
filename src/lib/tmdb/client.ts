@@ -1,3 +1,5 @@
+import https from "https";
+
 const API_URL = "https://api.themoviedb.org/3";
 const TMDB_TOKEN = process.env.NEXT_PUBLIC_TMDB_TOKEN;
 
@@ -5,14 +7,32 @@ if (!TMDB_TOKEN) {
     throw new Error("TMDB token is missing");
 }
 
-type FetchOptions = RequestInit & {
+type FetchOptions = {
     params?: Record<string, string | number | undefined>;
-    revalidate?: number;
 };
 
-export async function tmdbFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
-    const {params, revalidate, ...fetchOptions} = options;
+function get<T>(url: string): Promise<T> {
+    return new Promise((resolve, reject) => {
+        https
+            .get(url, { headers: { accept: "application/json", Authorization: `Bearer ${TMDB_TOKEN}` } }, (res) => {
+                let raw = "";
+                res.on("data", (chunk: string) => {
+                    raw += chunk;
+                });
+                res.on("end", () => {
+                    if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+                        resolve(JSON.parse(raw) as T);
+                    } else {
+                        reject(new Error(`TMDB request failed: ${res.statusCode}`));
+                    }
+                });
+            })
+            .on("error", reject);
+    });
+}
 
+export async function tmdbFetch<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+    const { params } = options;
     const url = new URL(`${API_URL}${endpoint}`);
 
     if (params) {
@@ -23,21 +43,5 @@ export async function tmdbFetch<T>(endpoint: string, options: FetchOptions = {})
         });
     }
 
-    const res = await fetch(url.toString(), {
-        method: "GET",
-        headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${TMDB_TOKEN}`
-        },
-
-        ...(fetchOptions.cache ? {cache: fetchOptions.cache} : revalidate ? {next: {revalidate}} : {}),
-
-        ...fetchOptions
-    });
-
-    if (!res.ok) {
-        throw new Error(`TMDB request failed: ${res.status}`);
-    }
-
-    return res.json() as Promise<T>;
+    return get<T>(url.toString());
 }

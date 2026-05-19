@@ -22,7 +22,7 @@ const TVShowCard: React.FC<TVShowCardProps> = ({
             <div className="bg-imdb-black w-44 flex-shrink-0 overflow-hidden rounded-sm transition-transform hover:scale-105">
                 <div className="relative h-64 w-full">
                     <Image
-                        src={poster_path ? `https://image.tmdb.org/t/p/w500${poster_path}` : "/no-image-available.png"}
+                        src={poster_path ? `https://image.tmdb.org/t/p/w500${poster_path}` : "https://via.placeholder.com/500x750?text=No+Image"}
                         alt={name}
                         fill
                         style={{ objectFit: "cover" }}

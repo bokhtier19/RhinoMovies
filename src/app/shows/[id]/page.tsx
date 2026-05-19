@@ -110,7 +110,7 @@ export default async function TVShowDetailsPage({params}: PageProps) {
                     {/* Poster */}
                     <div className="w-1/5 min-w-[200px] flex items-center flex-col justify-center">
                         <Image
-                            src={show.poster_path ? `https://image.tmdb.org/t/p/w500${show.poster_path}` : "/no-image-available.png"}
+                            src={show.poster_path ? `https://image.tmdb.org/t/p/w500${show.poster_path}` : "https://via.placeholder.com/500x750?text=No+Image"}
                             alt={`${show.name} poster`}
                             width={225}
                             height={340}
@@ -167,7 +167,7 @@ export default async function TVShowDetailsPage({params}: PageProps) {
                                     {casts.slice(0, 8).map((cast) => (
                                         <div key={cast.id} className="w-28 text-center">
                                             <Image
-                                                src={cast.profile_path ? `https://image.tmdb.org/t/p/w200${cast.profile_path}` : "/no-image-available.png"}
+                                                src={cast.profile_path ? `https://image.tmdb.org/t/p/w200${cast.profile_path}` : "https://via.placeholder.com/200x300?text=No+Photo"}
                                                 alt={cast.name}
                                                 width={100}
                                                 height={150}

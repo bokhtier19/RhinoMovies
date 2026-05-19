@@ -21,8 +21,7 @@ export function getMovieById(id: string) {
     return tmdbFetch<MovieDetails>(`/movie/${id}`, {
         params: {
             language: "en-US"
-        },
-        cache: "no-store"
+        }
     });
 }
 

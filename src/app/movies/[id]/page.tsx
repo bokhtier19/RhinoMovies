@@ -112,7 +112,7 @@ export default async function MovieDetailsPage({ params }: PageProps) {
                             src={
                                 movie.poster_path
                                     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                                    : "/no-image-available.png"
+                                    : "https://via.placeholder.com/500x750?text=No+Image"
                             }
                             alt={`${movie.title} poster`}
                             width={225}
@@ -170,7 +170,7 @@ export default async function MovieDetailsPage({ params }: PageProps) {
                                                 src={
                                                     cast.profile_path
                                                         ? `https://image.tmdb.org/t/p/w200${cast.profile_path}`
-                                                        : "/no-image-available.png"
+                                                        : "https://via.placeholder.com/200x300?text=No+Photo"
                                                 }
                                                 alt={cast.name}
                                                 width={100}
