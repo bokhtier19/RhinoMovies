@@ -71,7 +71,8 @@ export default function Navbar() {
 
     return (
         <nav
-            className={`bg-imdb-border sticky top-0 z-50 text-white shadow-2xl transition-transform duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"}`}
+            className={`sticky top-0 z-50 shadow-2xl transition-transform duration-300 ${hidden ? "-translate-y-full" : "translate-y-0"}`}
+            style={{ backgroundColor: "var(--nav-bg)", color: "var(--nav-fg)" }}
         >
             <div className="mx-auto flex max-w-[92%] items-center justify-between px-6 py-3">
                 {/* Logo */}
@@ -100,7 +101,7 @@ export default function Navbar() {
                         <div className="absolute top-full right-0 left-0 h-6" />
 
                         {/* Dropdown */}
-                        <div className="invisible absolute top-[calc(100%+1.5rem)] left-1/2 z-50 w-[720px] -translate-x-1/2 rounded-xl bg-[#2b2b2b]/95 p-6 text-gray-200 opacity-0 shadow-2xl transition-opacity duration-200 group-hover:visible group-hover:opacity-100">
+                        <div className="invisible absolute top-[calc(100%+1.5rem)] left-1/2 z-50 w-[720px] -translate-x-1/2 rounded-xl p-6 opacity-0 shadow-2xl transition-opacity duration-200 group-hover:visible group-hover:opacity-100" style={{ backgroundColor: "var(--nav-dropdown-bg)", color: "var(--nav-dropdown-fg)" }}>
                             <ul className="grid grid-cols-4 gap-x-8 gap-y-2 text-sm">
                                 {genres.map((genre) => (
                                     <li key={genre.id}>
@@ -125,7 +126,7 @@ export default function Navbar() {
                         <div className="absolute top-full right-0 left-0 h-6" />
 
                         {/* Dropdown */}
-                        <div className="invisible absolute top-[calc(100%+1.5rem)] left-1/2 z-50 w-[720px] -translate-x-1/2 rounded-xl bg-[#2b2b2b]/95 p-6 text-gray-200 opacity-0 shadow-2xl transition-opacity duration-200 group-hover:visible group-hover:opacity-100">
+                        <div className="invisible absolute top-[calc(100%+1.5rem)] left-1/2 z-50 w-[720px] -translate-x-1/2 rounded-xl p-6 opacity-0 shadow-2xl transition-opacity duration-200 group-hover:visible group-hover:opacity-100" style={{ backgroundColor: "var(--nav-dropdown-bg)", color: "var(--nav-dropdown-fg)" }}>
                             <ul className="grid max-h-[320px] grid-cols-4 gap-x-8 gap-y-2 overflow-y-auto text-sm">
                                 {countries.map((country) => (
                                     <li key={country.code}>
@@ -179,7 +180,7 @@ export default function Navbar() {
                Mobile Menu (simple links)
             --------------------------------- */}
             {menuOpen && (
-                <div className="flex flex-col gap-4 bg-black px-6 py-4 text-sm uppercase md:hidden">
+                <div className="flex flex-col gap-4 px-6 py-4 text-sm uppercase md:hidden" style={{ backgroundColor: "var(--nav-mobile-bg)", color: "var(--nav-mobile-fg)" }}>
                     <Link href="/" onClick={() => setMenuOpen(false)}>
                         Home
                     </Link>
@@ -196,7 +197,7 @@ export default function Navbar() {
                     <hr className="border-imdb-yellow/30" />
 
                     <Link href="/movies" onClick={() => setMenuOpen(false)}>
-                        <button className="flex w-full items-center gap-2 rounded-sm bg-white px-4 py-2 text-black">
+                        <button className="flex w-full items-center gap-2 rounded-sm bg-surface px-4 py-2 text-foreground">
                             <MdSearch size={18} />
                             Search
                         </button>

@@ -20,7 +20,7 @@ export default function Pagination({page, totalPages, onPageChange, maxVisible =
     return (
         <div className="flex items-center justify-center gap-4 mt-10 flex-wrap">
             {/* Prev */}
-            <button disabled={page === 1} onClick={() => onPageChange(page - 1)} className="px-4 py-2 hover:cursor-pointer rounded bg-gray-700 text-white flex gap-2 items-center disabled:opacity-40">
+            <button disabled={page === 1} onClick={() => onPageChange(page - 1)} className="px-4 py-2 hover:cursor-pointer rounded flex gap-2 items-center disabled:opacity-40" style={{ backgroundColor: "var(--surface)", color: "var(--foreground)" }}>
                 <FaLongArrowAltLeft />
                 Prev
             </button>
@@ -30,7 +30,8 @@ export default function Pagination({page, totalPages, onPageChange, maxVisible =
                 <button
                     key={p}
                     onClick={() => onPageChange(p)}
-                    className={`px-3 py-2 hover:cursor-pointer rounded-full ${p === page ? "bg-imdb-yellow text-black font-bold" : "bg-gray-800 text-white hover:bg-gray-700"}`}>
+                    className={`px-3 py-2 hover:cursor-pointer rounded-full ${p === page ? "bg-imdb-yellow text-black font-bold" : ""}`}
+                    style={p !== page ? { backgroundColor: "var(--surface)", color: "var(--foreground)" } : undefined}>
                     {p}
                 </button>
             ))}
@@ -39,7 +40,8 @@ export default function Pagination({page, totalPages, onPageChange, maxVisible =
             <button
                 disabled={page === totalPages}
                 onClick={() => onPageChange(page + 1)}
-                className="px-4 py-2 hover:cursor-pointer rounded bg-gray-700 text-white flex gap-2 items-center disabled:opacity-40">
+                className="px-4 py-2 hover:cursor-pointer rounded flex gap-2 items-center disabled:opacity-40"
+                style={{ backgroundColor: "var(--surface)", color: "var(--foreground)" }}>
                 Next
                 <FaLongArrowAltRight />
             </button>

@@ -1,49 +1,81 @@
 @import "tailwindcss";
 
-/* LIGHT THEME (Default) */
+/* LIGHT THEME */
 :root {
     --background: #ffffff;
     --foreground: #0a0a0a;
+    --card: #f4f4f4;
+    --muted: #737373;
+    --surface: #e8e8e8;
+    --surface-hover: #d4d4d4;
+    --border: #e0e0e0;
 
-    /* IMDb Brand Palette */
+    /* Navbar */
+    --nav-bg: #1f1f1f;
+    --nav-fg: #ffffff;
+    --nav-dropdown-bg: #ffffff;
+    --nav-dropdown-fg: #1a1a1a;
+    --nav-mobile-bg: #f4f4f4;
+    --nav-mobile-fg: #0a0a0a;
+
+    /* Brand — always fixed */
     --imdb-yellow: #f5c518;
     --imdb-black: #121212;
     --imdb-blue: #1f80e0;
-    --imdb-gray: #0a0a0a;
-    --imdb-white: #ffffff;
-    --imdb-lightgray: #e5e5e5;
     --imdb-border: #333333;
-    --imdb-card: #1a1a1a;
+    --imdb-lightgray: #e5e5e5;
 }
 
-/* DARK THEME */
-[data-theme="dark"] {
+/* DARK THEME — next-themes sets class="dark" on <html> */
+.dark {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --card: #1a1a1a;
+    --muted: #a3a3a3;
+    --surface: #2a2a2a;
+    --surface-hover: #3a3a3a;
+    --border: #333333;
 
-    --imdb-card: #1a1a1a;
-    --imdb-border: #444444;
+    /* Navbar */
+    --nav-bg: #1a1a1a;
+    --nav-fg: #ffffff;
+    --nav-dropdown-bg: #2b2b2b;
+    --nav-dropdown-fg: #e0e0e0;
+    --nav-mobile-bg: #111111;
+    --nav-mobile-fg: #ffffff;
 }
 
-/*  TAILWIND THEME BINDINGS */
+/* TAILWIND v4 COLOR BINDINGS */
 :root {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-muted: var(--muted);
+    --color-surface: var(--surface);
+    --color-surface-hover: var(--surface-hover);
+    --color-border: var(--border);
+
+    --color-nav-bg: var(--nav-bg);
+    --color-nav-fg: var(--nav-fg);
+    --color-nav-dropdown-bg: var(--nav-dropdown-bg);
+    --color-nav-dropdown-fg: var(--nav-dropdown-fg);
+    --color-nav-mobile-bg: var(--nav-mobile-bg);
+    --color-nav-mobile-fg: var(--nav-mobile-fg);
+
     --color-imdb-yellow: var(--imdb-yellow);
     --color-imdb-black: var(--imdb-black);
     --color-imdb-blue: var(--imdb-blue);
-    --color-imdb-gray: var(--imdb-gray);
-    --color-imdb-white: var(--imdb-white);
-    --color-imdb-lightgray: var(--imdb-lightgray);
     --color-imdb-border: var(--imdb-border);
-    --color-imdb-card: var(--imdb-card);
+    --color-imdb-lightgray: var(--imdb-lightgray);
 
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
 }
 
-/*  BASE STYLES */
+/* BASE STYLES */
 body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
+    background-color: var(--background);
+    color: var(--foreground);
     font-family: var(--font-sans, Arial, Helvetica, sans-serif);
     transition:
         background-color 0.3s ease,
@@ -51,13 +83,12 @@ body {
     scroll-behavior: smooth;
 }
 
-/* Hide scrollbar for all browsers */
+/* Hide scrollbar */
 ::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
 }
-
 html,
 body {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

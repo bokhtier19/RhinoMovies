@@ -33,7 +33,8 @@ const ScrollToTop = () => {
             {isVisible && (
                 <button
                     onClick={scrollToTop}
-                    className="fixed bottom-20 right-20 z-20 p-2 hover:cursor-pointer rounded-full bg-gray-800 text-imdb-yellow hover:bg-gray-700 transition-opacity duration-300">
+                    className="fixed bottom-20 right-20 z-20 p-2 hover:cursor-pointer rounded-full text-imdb-yellow transition-opacity duration-300"
+                    style={{ backgroundColor: "var(--surface)" }}>
                     <BiSolidArrowToTop size={35} />
                 </button>
             )}
