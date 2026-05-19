@@ -24,7 +24,9 @@ export default function RootLayout({
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
                     <SearchProvider>
                         <Navbar />
-                        {children}
+                        <main className="max-w-[1920px] mx-auto w-full">
+                            {children}
+                        </main>
                         <ScrollToTop />
                         <Footer />
                         <Analytics />

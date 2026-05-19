@@ -1,7 +1,23 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "PowerShell($token = \\(Get-Content \"F:/WebDev Projects/RhinoMovie/rhinomovies/.env.local\" | Where-Object { $_ -match \"NEXT_PUBLIC_TMDB_TOKEN\" } | ForEach-Object { \\($_ -split \"=\", 2\\)[1] }\\); try { $result = Invoke-RestMethod -Uri \"https://api.themoviedb.org/3/trending/all/day?language=en-US\" -Headers @{ Authorization = \"Bearer $token\"; Accept = \"application/json\" }; Write-Output \"API OK - results count: $\\($result.results.Count\\)\" } catch { Write-Output \"API FAILED: $_\" })",
+      "PowerShell($token = \\(Get-Content \"F:/WebDev Projects/RhinoMovie/rhinomovies/.env.local\" | Where-Object { $_ -match \"NEXT_PUBLIC_TMDB_TOKEN\" } | ForEach-Object { \\($_ -split \"=\", 2\\)[1] }\\); node -e \"fetch\\('https://api.themoviedb.org/3/trending/all/day?language=en-US', { headers: { accept: 'application/json', Authorization: 'Bearer ' + '$token' } }\\).then\\(r => r.json\\(\\)\\).then\\(d => console.log\\('OK:', d.results?.length\\)\\).catch\\(e => console.error\\('ERROR:', e.message\\)\\)\")",
+      "PowerShell($token = \\(Get-Content \"F:/WebDev Projects/RhinoMovie/rhinomovies/.env.local\" | Where-Object { $_ -match \"NEXT_PUBLIC_TMDB_TOKEN\" } | ForEach-Object { \\($_ -split \"=\", 2\\)[1] }\\); node -e \"fetch\\('https://api.themoviedb.org/3/trending/all/day?language=en-US', { headers: { accept: 'application/json', Authorization: 'Bearer ' + '$token' } }\\).then\\(r => r.json\\(\\)\\).then\\(d => console.log\\('OK:', d.results?.length\\)\\).catch\\(e => console.error\\('ERROR:', e.cause?.message ?? e.message, e.cause ?? ''\\)\\)\")",
+      "PowerShell(node -e \"fetch\\('https://httpbin.org/get'\\).then\\(r => r.json\\(\\)\\).then\\(d => console.log\\('OK'\\)\\).catch\\(e => console.error\\('ERROR:', e.cause?.code ?? e.message\\)\\)\")",
+      "PowerShell(Resolve-DnsName *)",
+      "PowerShell(cd \"F:/WebDev Projects/RhinoMovie/rhinomovies\"; $env:NODE_OPTIONS=\"--dns-result-order=ipv4first\"; node -e \"fetch\\('http://localhost:3000/api/genres'\\).then\\(r => r.text\\(\\)\\).then\\(console.log\\).catch\\(e => console.error\\(e.message\\)\\)\")",
+      "Bash(echo \"Server PID: $!\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/api/genres)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/api/countries)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s http://localhost:3000/api/genres)",
+      "Bash(node -e \"const d=require\\('fs'\\).readFileSync\\('/dev/stdin','utf8'\\); const j=JSON.parse\\(d\\); console.log\\(j.slice\\(0,3\\)\\)\")",
+      "Bash(curl -s http://localhost:3000/api/countries)",
+      "PowerShell(Get-Process *)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(curl -s http://localhost:3000/)"
     ]
   }
 }

@@ -85,7 +85,7 @@ export default function TopRatedTVShowsPage() {
 
             {/* Grid */}
             {!loading && shows.length > 0 && (
-                <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
                     {shows.map((show) => (
                         <MovieCard key={show.id} {...show} />
                     ))}
