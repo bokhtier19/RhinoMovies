@@ -1,10 +1,16 @@
 import https from "node:https";
 import { setDefaultResultOrder } from "node:dns";
+import { gunzip, inflate, brotliDecompress } from "node:zlib";
+import { promisify } from "node:util";
 
 setDefaultResultOrder("ipv4first");
 
+const gunzipAsync = promisify(gunzip);
+const inflateAsync = promisify(inflate);
+const brotliAsync = promisify(brotliDecompress);
+
 const API_URL = "https://api.themoviedb.org/3";
-const TMDB_TOKEN = process.env.NEXT_PUBLIC_TMDB_TOKEN;
+const TMDB_TOKEN = process.env.TMDB_TOKEN;
 
 if (!TMDB_TOKEN) {
     throw new Error("TMDB token is missing");
@@ -13,6 +19,9 @@ if (!TMDB_TOKEN) {
 type FetchOptions = {
     params?: Record<string, string | number | undefined>;
 };
+
+const cache = new Map<string, { data: unknown; expires: number }>();
+const CACHE_TTL = 60 * 60 * 1000;
 
 function sleep(ms: number) {
     return new Promise((res) => setTimeout(res, ms));
@@ -26,18 +35,35 @@ function request<T>(url: string): Promise<T> {
                 {
                     headers: {
                         accept: "application/json",
-                        "accept-encoding": "identity",
                         Authorization: `Bearer ${TMDB_TOKEN}`,
                     },
                 },
                 (res) => {
-                    let raw = "";
-                    res.on("data", (chunk: string) => (raw += chunk));
-                    res.on("end", () => {
-                        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-                            resolve(JSON.parse(raw) as T);
-                        } else {
-                            reject(new Error(`TMDB ${res.statusCode}`));
+                    const chunks: Buffer[] = [];
+                    res.on("data", (chunk: Buffer) => chunks.push(chunk));
+                    res.on("end", async () => {
+                        try {
+                            const buf = Buffer.concat(chunks);
+                            const encoding = res.headers["content-encoding"];
+                            let text: string;
+
+                            if (encoding === "gzip") {
+                                text = (await gunzipAsync(buf)).toString("utf8");
+                            } else if (encoding === "deflate") {
+                                text = (await inflateAsync(buf)).toString("utf8");
+                            } else if (encoding === "br") {
+                                text = (await brotliAsync(buf)).toString("utf8");
+                            } else {
+                                text = buf.toString("utf8");
+                            }
+
+                            if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+                                resolve(JSON.parse(text) as T);
+                            } else {
+                                reject(new Error(`TMDB ${res.statusCode}: ${text.slice(0, 200)}`));
+                            }
+                        } catch (e) {
+                            reject(e);
                         }
                     });
                 }
@@ -52,7 +78,7 @@ async function get<T>(url: string, retries = 3): Promise<T> {
             return await request<T>(url);
         } catch (err) {
             if (attempt === retries - 1) throw err;
-            await sleep(300 * 2 ** attempt); // 300ms, 600ms, 1200ms
+            await sleep(300 * 2 ** attempt);
         }
     }
     throw new Error("unreachable");
@@ -70,5 +96,13 @@ export async function tmdbFetch<T>(endpoint: string, options: FetchOptions = {})
         });
     }
 
-    return get<T>(url.toString());
+    const key = url.toString();
+    const cached = cache.get(key);
+    if (cached && cached.expires > Date.now()) {
+        return cached.data as T;
+    }
+
+    const data = await get<T>(key);
+    cache.set(key, { data, expires: Date.now() + CACHE_TTL });
+    return data;
 }

@@ -6,6 +6,7 @@ import {SearchProvider} from "@/src/context/SearchContext";
 import {Analytics} from "@vercel/analytics/next";
 import {ThemeProvider} from "next-themes";
 import ScrollToTop from "@/src/components/ScrollToTop";
+import { ErrorBoundary } from "@/src/components/ErrorBoundary";
 
 export const metadata: Metadata = {
     title: "RhinoMovies",
@@ -24,9 +25,11 @@ export default function RootLayout({
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
                     <SearchProvider>
                         <Navbar />
-                        <main className="max-w-[1920px] mx-auto w-full">
-                            {children}
-                        </main>
+                        <ErrorBoundary>
+                            <main className="max-w-[1920px] mx-auto w-full">
+                                {children}
+                            </main>
+                        </ErrorBoundary>
                         <ScrollToTop />
                         <Footer />
                         <Analytics />

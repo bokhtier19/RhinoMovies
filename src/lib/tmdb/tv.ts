@@ -73,6 +73,15 @@ export function getOnTheAirTVShows(page = 1) {
 }
 
 /**
+ * TV show videos (trailers, teasers, etc.)
+ */
+export function getTVVideos(id: string) {
+    return tmdbFetch<{ results: { key: string; site: string; type: string; official: boolean }[] }>(`/tv/${id}/videos`, {
+        params: { language: "en-US" },
+    });
+}
+
+/**
  * Top rated TV shows
  */
 export function getTopRatedTVShows(page = 1) {

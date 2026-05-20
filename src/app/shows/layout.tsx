@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import { SearchProvider } from "@/src/context/SearchContext";
 
 export const metadata: Metadata = {
-    title: "Movies | RhinoMovies",
-    description: "Browse and search the latest movies, top rated films, and filter by genre or country.",
+    title: "TV Shows | RhinoMovies",
+    description: "Browse and search the latest TV shows, top rated series, and discover new favourites.",
 };
 
-export default function MoviesLayout({ children }: { children: React.ReactNode }) {
+export default function ShowsLayout({ children }: { children: React.ReactNode }) {
     return (
         <SearchProvider>
-            <section className="movies-layout">
+            <section>
                 <main>{children}</main>
             </section>
         </SearchProvider>

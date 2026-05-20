@@ -2,13 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { FaPlay, FaPlayCircle } from "react-icons/fa";
-import { IoMdAdd } from "react-icons/io";
+import { FaPlayCircle } from "react-icons/fa";
 import { BsCameraReelsFill } from "react-icons/bs";
 import { HiChevronRight } from "react-icons/hi";
 
-import { getMovieById, getMovieCredits } from "@/src/lib/tmdb/movies";
+import { getMovieById, getMovieCredits, getMovieVideos } from "@/src/lib/tmdb/movies";
 import { LikeDislike } from "@/src/components/LikeDislike";
+import { WatchButton } from "@/src/components/WatchButton";
+import { FavouriteButton } from "@/src/components/FavouriteButton";
 import { MovieDetails, MovieCredits } from "@/src/types/movie";
 import { Cast } from "@/src/types/cast";
 
@@ -50,8 +51,15 @@ export default async function MovieDetailsPage({ params }: PageProps) {
     }
 
     let credits: MovieCredits | null = null;
+    let trailerKey: string | null = null;
     try {
-        credits = await getMovieCredits(id);
+        [credits] = await Promise.all([
+            getMovieCredits(id).catch(() => null),
+            getMovieVideos(id).then((v) => {
+                const trailer = v.results.find((r) => r.site === "YouTube" && r.type === "Trailer") ?? v.results.find((r) => r.site === "YouTube");
+                trailerKey = trailer?.key ?? null;
+            }).catch(() => {}),
+        ]);
     } catch {
         credits = null;
     }
@@ -126,8 +134,11 @@ export default async function MovieDetailsPage({ params }: PageProps) {
                             )}
                             <div className="mt-2 h-1.5 w-full rounded-full" style={{ backgroundColor: "var(--detail-track-bg)" }}>
                                 <div
-                                    className="h-1.5 rounded-full bg-green-600"
-                                    style={{ width: `${(movie.vote_average / 10) * 100}%` }}
+                                    className="h-1.5 rounded-full"
+                                    style={{
+                                        width: `${(movie.vote_average / 10) * 100}%`,
+                                        backgroundColor: movie.vote_average >= 7 ? "#22c55e" : movie.vote_average >= 4 ? "#f59e0b" : "#ef4444",
+                                    }}
                                 />
                             </div>
                             <p className="mt-1 text-center text-xs" style={{ color: "var(--detail-muted)" }}>
@@ -142,18 +153,8 @@ export default async function MovieDetailsPage({ params }: PageProps) {
                                 {movie.title}
                             </h1>
                             <div className="flex flex-wrap gap-2">
-                                <button
-                                    className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold sm:gap-2 sm:px-5 sm:py-2.5 sm:text-sm"
-                                    style={{ backgroundColor: "#f5c518", color: "#000" }}
-                                >
-                                    <FaPlay size={10} /> Watch Now
-                                </button>
-                                <button
-                                    className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold sm:gap-2 sm:px-5 sm:py-2.5 sm:text-sm"
-                                    style={{ borderColor: "var(--detail-btn-border)", color: "var(--detail-btn-color)" }}
-                                >
-                                    <IoMdAdd size={14} /> Watchlist
-                                </button>
+                                <WatchButton videoKey={trailerKey} />
+                                <FavouriteButton id={movie.id} type="movie" title={movie.title} poster_path={movie.poster_path} />
                             </div>
                         </div>
 

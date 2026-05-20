@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 import { CgProfile } from "react-icons/cg";
@@ -75,6 +75,8 @@ export default function Navbar() {
     const [hidden, setHidden] = useState(false);
     const [genres, setGenres] = useState<Genre[]>([]);
     const [countries, setCountries] = useState<Country[]>([]);
+    const mobileMenuRef = useRef<HTMLDivElement>(null);
+    const pathname = usePathname();
 
     useEffect(() => {
         fetch("/api/genres")
@@ -101,6 +103,21 @@ export default function Navbar() {
         window.addEventListener("scroll", onScroll);
         return () => window.removeEventListener("scroll", onScroll);
     }, [createScrollHandler]);
+
+    useEffect(() => {
+        setMenuOpen(false);
+    }, [pathname]);
+
+    useEffect(() => {
+        if (!menuOpen) return;
+        const handleOutsideClick = (e: MouseEvent) => {
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleOutsideClick);
+        return () => document.removeEventListener("mousedown", handleOutsideClick);
+    }, [menuOpen]);
 
     return (
         <nav
@@ -192,7 +209,7 @@ export default function Navbar() {
 
             {/* Mobile menu */}
             {menuOpen && (
-                <div className="md:hidden" style={{ backgroundColor: "#0d0d0d" }}>
+                <div ref={mobileMenuRef} className="md:hidden" style={{ backgroundColor: "#0d0d0d" }}>
                     <div className="flex flex-col px-4 py-3 text-sm">
                         {[
                             { href: "/", label: "Home" },

@@ -6,15 +6,103 @@
 
 ## Table of Contents
 
-1. [Project Overview](#1-project-overview)
-2. [Tech Stack](#2-tech-stack)
-3. [Architecture](#3-architecture)
-4. [Data Flow](#4-data-flow)
-5. [Current Features](#5-current-features)
-6. [What's Missing / Can Be Improved](#6-whats-missing--can-be-improved)
-7. [What Can Be Added](#7-what-can-be-added)
-8. [Security Concerns](#8-security-concerns)
-9. [Performance Notes](#9-performance-notes)
+0. [Your Backlog](#0-your-backlog)
+1. [Fixes Applied (Session Log)](#fixes-applied-session-log)
+2. [Project Overview](#1-project-overview)
+3. [Tech Stack](#2-tech-stack)
+4. [Architecture](#3-architecture)
+5. [Data Flow](#4-data-flow)
+6. [Current Features](#5-current-features)
+7. [What's Missing / Can Be Improved](#6-whats-missing--can-be-improved)
+8. [What Can Be Added](#7-what-can-be-added)
+9. [Security Concerns](#8-security-concerns)
+10. [Performance Notes](#9-performance-notes)
+
+---
+
+## 0. Your Backlog
+
+> **This section is yours to edit.** Drop ideas, requests, and priorities here. Use any format you like — checkboxes, bullets, notes. Claude will use this as context in future sessions.
+
+_Add your own below this line:_
+
+---
+
+## Fixes Applied (Session Log)
+
+> Tracks every change made by Claude in dev sessions. Newest first.
+
+---
+
+### Session — May 20, 2026 (Pass 2 — Section 6 Issues)
+
+#### Fix 4 — TMDB token security (`src/lib/tmdb/client.ts`, `.env.local`)
+Renamed `NEXT_PUBLIC_TMDB_TOKEN` → `TMDB_TOKEN`. The `NEXT_PUBLIC_` prefix caused Next.js to embed the token in the client-side JS bundle. Now server-side only.
+
+#### Fix 5 — Watch Now → YouTube trailer modal (`src/components/TrailerModal.tsx`, `WatchButton.tsx`)
+Added `getMovieVideos` / `getTVVideos` TMDB functions. Created `TrailerModal` (keyboard-dismissable iframe embed) and `WatchButton` (client component). Both detail pages now fetch the first official YouTube trailer and open it in a modal. Button is disabled with reduced opacity when no trailer is available.
+
+#### Fix 6 — Add to Watchlist → localStorage (`src/components/FavouriteButton.tsx`)
+Created `FavouriteButton` client component. Reads/writes `rhino_favourites` key in localStorage. Toggles heart icon and border color. No account required. Works across page refreshes.
+
+#### Fix 7 — Rating bar dynamic color (detail pages)
+Rating bar fill color is now `green` (≥7), `amber` (4–7), or `red` (<4) instead of always green.
+
+#### Fix 8 — Mobile nav close-on-outside-click (`src/components/Navbar.tsx`)
+Added a `mousedown` listener on `document` that closes the mobile menu when the user taps outside it. Also closes on route change via `usePathname` effect.
+
+#### Fix 9 — SearchContext query leak (`src/context/SearchContext.tsx`)
+Search query now resets to `""` on every route change via `usePathname` + `useEffect`. Previously the query from `/movies` persisted when navigating to `/shows`.
+
+#### Fix 10 — SEO for browse pages (layouts)
+Added `export const metadata` to `src/app/movies/layout.tsx` and created `src/app/shows/layout.tsx` with proper title and description. Client components cannot export metadata, so it lives in the layout wrapper.
+
+#### Fix 11 — Skeleton loading pages (`loading.tsx`)
+Added `src/app/movies/loading.tsx`, `src/app/shows/loading.tsx`, `src/app/topimdb/loading.tsx`. Next.js App Router automatically shows these during navigation with `animate-pulse` card skeletons.
+
+#### Fix 12 — Error boundary (`src/components/ErrorBoundary.tsx`)
+Created a React class-based `ErrorBoundary` with "Try again" recovery. Wraps `<main>` in the root layout so a render error in any page doesn't crash the entire app.
+
+#### Fix 13 — Deleted dead code
+- Deleted `src/components/ComingSoon.tsx` (not imported anywhere)
+- Deleted `src/components/TVShowCard.tsx` (duplicated `MovieCard.tsx`, not imported)
+- Deleted `src/types/interface.d.ts` (duplicated types already in `movie.ts`, `tv.ts`, `cast.ts`)
+
+---
+
+### Session — May 20, 2026 (Pass 1 — Server fixes)
+
+#### Fix 1 — TMDB response decompression (`src/lib/tmdb/client.ts`)
+
+**Problem:** TMDB was returning gzip-compressed HTTP responses even though the client requested `accept-encoding: identity`. The code was concatenating raw `Buffer` chunks directly into a string (`raw += chunk`), which corrupted binary compressed data before passing it to `JSON.parse`. This caused all 4 homepage API calls to silently fail (the `safe()` wrapper swallowed errors and returned empty arrays), resulting in the "Failed to load content" message on every page load.
+
+**Root cause of the silent crash:** `JSON.parse` was called inside a Node.js `EventEmitter` callback (`.on("end", ...)`), not inside the Promise executor. When it threw, the error became an uncaught exception instead of a rejected Promise — bypassing the retry logic and the `safe()` wrapper entirely, and flooding the server log with `⨯ uncaughtException` spam that destabilized Turbopack's worker process.
+
+**Fix applied:**
+- Collect response data as `Buffer[]` chunks instead of string concatenation
+- Check `res.headers["content-encoding"]` and decompress with `node:zlib` (`gunzip` / `inflate` / `brotliDecompress`) before parsing
+- Wrap `JSON.parse` in a `try/catch` so failures reject the Promise cleanly instead of escaping as uncaught exceptions
+- Removed the `accept-encoding: identity` header since we now handle any encoding
+
+**File changed:** `src/lib/tmdb/client.ts`
+
+---
+
+#### Fix 2 — In-memory response cache (`src/lib/tmdb/client.ts`)
+
+**Problem:** Every page render (including HMR reloads in dev) triggered fresh TMDB network calls. Combined with the network being slow, this made every page load take 60–130 seconds.
+
+**Fix applied:** Added a `Map`-based in-memory cache with a 1-hour TTL. After the first successful fetch, subsequent renders return instantly from cache without hitting TMDB. Cache is per-server-process (resets on server restart).
+
+**File changed:** `src/lib/tmdb/client.ts`
+
+---
+
+#### Fix 3 — Turbopack corrupted source map (`[root-of-the-server]__b5d25fa5._.js`)
+
+**Problem:** A Turbopack-generated SSR chunk consistently contained a corrupted source map (binary data where a JSON source map was expected). This caused a flood of `SyntaxError: Unexpected token` warnings on every request, which made the server logs unreadable and slowed HMR.
+
+**Fix applied:** Cleared the `.next` cache folder and restarted the dev server. The corruption was in the cached build artifact, not in the source. The corrupted chunk was also masking real errors in stack traces because Turbopack couldn't map back to TypeScript source lines.
 
 ---
 
@@ -58,63 +146,69 @@
 rhinomovies/
 ├── src/
 │   ├── app/                        # Next.js App Router
-│   │   ├── layout.tsx              # Root layout — wraps with ThemeProvider & SearchContext
+│   │   ├── layout.tsx              # Root layout — ThemeProvider, SearchProvider, ErrorBoundary
 │   │   ├── page.tsx                # Root page — redirects to /home
 │   │   ├── globals.css             # Global styles, CSS variables, Tailwind base
 │   │   │
 │   │   ├── home/                   # Homepage (Server Component)
-│   │   │   ├── layout.tsx          # Home layout
+│   │   │   ├── layout.tsx          # Home layout (SearchProvider wrapper)
 │   │   │   └── page.tsx            # Trending, now playing, upcoming — SSR with Promise.all
 │   │   │
 │   │   ├── movies/                 # Movies section
+│   │   │   ├── layout.tsx          # SEO metadata + SearchProvider
+│   │   │   ├── loading.tsx         # Skeleton loader shown during navigation
 │   │   │   ├── page.tsx            # Browse & search movies (Client Component)
-│   │   │   └── [id]/page.tsx       # Movie detail page (Server Component, dynamic)
+│   │   │   └── [id]/page.tsx       # Movie detail — SSR, fetches trailer + credits in parallel
 │   │   │
 │   │   ├── shows/                  # TV Shows section
+│   │   │   ├── layout.tsx          # SEO metadata + SearchProvider
+│   │   │   ├── loading.tsx         # Skeleton loader shown during navigation
 │   │   │   ├── page.tsx            # Browse & search TV shows (Client Component)
-│   │   │   └── [id]/page.tsx       # TV show detail page (Server Component, dynamic)
+│   │   │   └── [id]/page.tsx       # TV show detail — SSR, fetches trailer + credits in parallel
 │   │   │
 │   │   ├── topimdb/                # Top IMDb ratings page
-│   │   │   └── page.tsx            # Client Component
+│   │   │   ├── loading.tsx         # Skeleton loader
+│   │   │   └── page.tsx            # Client Component with pagination
 │   │   │
 │   │   └── api/                    # Internal API routes (Next.js Route Handlers)
-│   │       ├── movies/route.ts     # GET /api/movies — delegates search/filter to TMDB
-│   │       ├── tv/route.ts         # GET /api/tv — delegates search/filter to TMDB
+│   │       ├── movies/route.ts     # GET /api/movies — search/filter delegated to TMDB
+│   │       ├── tv/route.ts         # GET /api/tv — search/filter delegated to TMDB
 │   │       ├── genres/route.ts     # GET /api/genres — cached 24h
 │   │       └── countries/route.ts  # GET /api/countries — cached 24h
 │   │
 │   ├── components/                 # Shared UI components
-│   │   ├── Navbar.tsx              # Sticky nav with mega menus, theme toggle
+│   │   ├── Navbar.tsx              # Sticky nav, mega menus, outside-click close, theme toggle
 │   │   ├── MovieCard.tsx           # Polymorphic card for movie or TV show
-│   │   ├── TVShowCard.tsx          # TV show variant card
+│   │   ├── TrailerModal.tsx        # YouTube trailer iframe modal (Escape to close)
+│   │   ├── WatchButton.tsx         # Client button — opens TrailerModal or disabled if no trailer
+│   │   ├── FavouriteButton.tsx     # Client button — localStorage watchlist toggle with heart icon
+│   │   ├── ErrorBoundary.tsx       # React class error boundary with "Try again" recovery
 │   │   ├── Searchbar.tsx           # Debounced search input tied to SearchContext
 │   │   ├── Pagination.tsx          # Page controls with windowed page buttons
 │   │   ├── Footer.tsx              # Footer with links and disclaimer
 │   │   ├── ThemeProvider.tsx       # next-themes wrapper + ModeToggle component
 │   │   ├── Loader.tsx              # Full-height loading spinner
 │   │   ├── Title.tsx               # Styled section heading
-│   │   ├── ScrollToTop.tsx         # Fixed scroll-to-top button
-│   │   └── ComingSoon.tsx          # Placeholder component
+│   │   └── ScrollToTop.tsx         # Fixed scroll-to-top button
 │   │
 │   ├── context/
-│   │   └── SearchContext.tsx       # Global search state via React Context
+│   │   └── SearchContext.tsx       # Search state — resets automatically on route change
 │   │
 │   ├── lib/
 │   │   └── tmdb/                   # TMDB API client layer
-│   │       ├── client.ts           # Base fetch wrapper with Bearer auth
-│   │       ├── movies.ts           # All movie-related API calls
-│   │       ├── tv.ts               # All TV show-related API calls
+│   │       ├── client.ts           # https.get wrapper — gzip decompress, in-memory cache, retry
+│   │       ├── movies.ts           # Movie API calls incl. getMovieVideos
+│   │       ├── tv.ts               # TV API calls incl. getTVVideos
 │   │       └── trending.ts         # Trending endpoint
 │   │
 │   └── types/                      # TypeScript type definitions
 │       ├── movie.ts                # Movie, MovieDetails, MovieCredits
 │       ├── tv.ts                   # TVShow, TVShowDetails, TVShowCredits
 │       ├── cast.ts                 # Cast member interface
-│       ├── common.ts               # TMDBBase, MediaType, PaginatedResponse<T>
-│       └── interface.d.ts          # Additional type declarations
+│       └── common.ts               # TMDBBase, MediaType, PaginatedResponse<T>
 │
 ├── public/                         # Static assets
-├── .env.local                      # NEXT_PUBLIC_TMDB_TOKEN
+├── .env.local                      # TMDB_TOKEN (server-side only)
 ├── next.config.ts                  # Image remote patterns
 ├── tsconfig.json                   # TypeScript config
 ├── tailwind.config (inline)        # Tailwind v4 via PostCSS
@@ -145,24 +239,29 @@ rhinomovies/
 RootLayout (layout.tsx)
 └── ThemeProvider
     └── SearchProvider
-        ├── Navbar
+        ├── Navbar (outside-click close, route-aware)
         │   ├── ModeToggle
-        │   └── Genre/Country Mega Menus
-        ├── [Page Content]
-        │   ├── HomePage
-        │   │   └── MovieCard[]
-        │   ├── MoviesPage
-        │   │   ├── Searchbar
-        │   │   ├── MovieCard[]
-        │   │   └── Pagination
-        │   ├── MovieDetailPage
-        │   │   └── Cast list
-        │   ├── ShowsPage
-        │   │   ├── Searchbar
-        │   │   ├── TVShowCard[]
-        │   │   └── Pagination
-        │   └── ShowDetailPage
-        │       └── Cast list
+        │   └── Genre/Country Mega Menus → /movies?genre= / ?country=
+        ├── ErrorBoundary
+        │   └── [Page Content]
+        │       ├── HomePage
+        │       │   └── MovieCard[]
+        │       ├── MoviesPage
+        │       │   ├── Searchbar
+        │       │   ├── MovieCard[]
+        │       │   └── Pagination
+        │       ├── MovieDetailPage
+        │       │   ├── WatchButton → TrailerModal (YouTube embed)
+        │       │   ├── FavouriteButton (localStorage)
+        │       │   └── Cast list (with fallback avatars)
+        │       ├── ShowsPage
+        │       │   ├── Searchbar
+        │       │   ├── MovieCard[]
+        │       │   └── Pagination
+        │       └── ShowDetailPage
+        │           ├── WatchButton → TrailerModal (YouTube embed)
+        │           ├── FavouriteButton (localStorage)
+        │           └── Cast list (with fallback avatars)
         └── Footer
 ```
 
@@ -245,13 +344,19 @@ Browser navigates to /movies/[id]
 movies/[id]/page.tsx (Server)
      │
      ▼
-Promise.all([getMovieById(id), getMovieCredits(id)])
+Promise.all([
+  getMovieById(id),
+  getMovieCredits(id),  → cast list
+  getMovieVideos(id)    → first YouTube trailer key
+])
      │
      ▼
 TMDB API (fresh, no cache)
      │
      ▼
 Full detail page HTML → Browser
+  WatchButton (client) receives trailerKey prop
+  FavouriteButton (client) reads/writes localStorage
 ```
 
 ---
@@ -272,31 +377,35 @@ Full detail page HTML → Browser
 - Search falls through to top-rated list when query is empty
 
 ### Detail Pages
-- Full movie detail: title, overview, genres, runtime, release date, production countries, rating bar
+- Full movie detail: title, overview, genres, runtime, release date, production countries, dynamic rating bar
 - Full TV show detail: title, overview, genres, seasons, episodes, first air date, production companies
-- Top 8 cast members with profile photos and character names
+- Top 10 cast members with profile photos and fallback avatars
 - Backdrop image with blur/overlay effect
-- "Watch Now" and "Add to Favourites" buttons (currently non-functional UI placeholders)
+- **"Watch Trailer" button** — fetches YouTube trailer from TMDB `/videos`, opens in keyboard-dismissable modal. Greyed out if no trailer is found.
+- **"Add to Watchlist" button** — saves to `localStorage` with heart icon toggle. Persists across refreshes. No account required.
+- Rating bar color: green (≥7.0), amber (4.0–6.9), red (<4.0)
 
 ### Navigation
 - Sticky navbar with scroll-hide behavior
-- Genre mega menu (fetched and cached from TMDB)
-- Country mega menu (fetched and cached from TMDB)
-- Mobile-responsive hamburger menu
+- Genre mega menu (fetched and cached from TMDB) — links to `/movies?genre=`
+- Country mega menu (fetched and cached from TMDB) — links to `/movies?country=`
+- Mobile-responsive hamburger menu — closes on outside tap and route change
 - Dark / Light theme toggle
 
 ### UI & UX
 - Responsive grid layout (2–7 columns depending on viewport)
 - Dark and light theme (system-aware with manual toggle)
-- Loading spinner for async states
+- Skeleton loading pages (`loading.tsx`) for movies, shows, and topimdb routes
 - Scroll-to-top floating button
 - Graceful 404 handling for invalid movie/show IDs
 - Empty state and error state handling on browse pages
 - Windowed pagination (max 10 visible page buttons, capped at 500 for TMDB limits)
+- Global `ErrorBoundary` with "Try again" recovery — prevents full-app crashes
 
 ### Code Quality
 - Full TypeScript coverage with strict mode
 - Separated concerns: API client, types, context, components
+- Search context resets on route change — no query bleed between pages
 - Prettier + ESLint enforced
 - Vercel Analytics integrated
 
@@ -306,37 +415,37 @@ Full detail page HTML → Browser
 
 ### 6.1 Critical / High Priority
 
-| Issue | Detail |
-|---|---|
-| **TMDB token is `NEXT_PUBLIC_*`** | Using `NEXT_PUBLIC_TMDB_TOKEN` exposes the API key to the browser bundle. It should be `TMDB_TOKEN` (no `NEXT_PUBLIC_` prefix) and only used server-side in API routes and Server Components. |
-| **"Watch Now" button is a dead link** | The button exists on every detail page but does nothing. It should either link to a streaming source, a trailer, or be removed until implemented. |
-| **"Add to Favourites" is a dead link** | Same issue — no backend or localStorage to persist favourites. |
-| **No real pagination on `/topimdb`** | The top IMDb page fetches data but pagination behavior is unclear/unfinished. |
-| **`ComingSoon.tsx` is unused** | Dead component. Should be used on placeholder routes or deleted. |
-| **`TVShowCard.tsx` may duplicate `MovieCard.tsx`** | Two card components for the same visual purpose. Should be merged into one polymorphic component (MovieCard already handles both). |
-| **No SEO for browse pages** | `/movies` and `/shows` have no `<title>` or `<meta>` tags. Only detail pages have metadata generation. |
-| **No error boundaries** | No React error boundaries. An uncaught render error on the homepage would crash the entire page. |
+| Status | Issue | Detail |
+|---|---|---|
+| ✅ **Fixed** | **TMDB token was `NEXT_PUBLIC_*`** | Renamed to `TMDB_TOKEN`. Server-side only now. |
+| ✅ **Fixed** | **"Watch Now" was a dead button** | Opens YouTube trailer modal via TMDB `/videos` endpoint. Disabled (greyed) when no trailer exists. |
+| ✅ **Fixed** | **"Add to Watchlist" was a dead button** | Reads/writes `localStorage`. Toggles heart icon. No account needed. |
+| ✅ **Fixed** | **`ComingSoon.tsx` was unused** | Deleted. |
+| ✅ **Fixed** | **`TVShowCard.tsx` duplicated `MovieCard.tsx`** | Deleted. `MovieCard` already handles both types. |
+| ✅ **Fixed** | **No SEO for browse pages** | Added `metadata` export to `movies/layout.tsx` and created `shows/layout.tsx`. |
+| ✅ **Fixed** | **No error boundaries** | `ErrorBoundary` class component wraps `<main>` in root layout with "Try again" recovery. |
+| ℹ️ **Was fine** | **No real pagination on `/topimdb`** | Pagination was already implemented and working. |
 
 ### 6.2 Code Quality
 
-| Issue | Detail |
-|---|---|
-| **API calls from Client Components call internal `/api/*` routes** | This adds an unnecessary hop: Client → `/api/movies` → TMDB. Better to call TMDB directly from Server Components or route handlers. |
-| **Inconsistent caching** | Detail pages use `no-store`; homepage uses default. There's no documented strategy. Define clear cache policies per route. |
-| **`SearchContext` is globally shared** | The search state persists when navigating between Movies and Shows pages, which causes the shows page to load with the leftover movie search query. |
-| **No loading.tsx files** | Next.js App Router supports `loading.tsx` for streaming skeletons. Currently only a `Loader` spinner is used inside components. |
-| **Tailwind v4 config approach** | Tailwind v4 moves config inline into CSS — make sure the setup is fully leveraging this rather than mixing old v3 patterns. |
-| **Unused `interface.d.ts`** | Appears redundant alongside the typed files in `types/`. |
+| Status | Issue | Detail |
+|---|---|---|
+| ✅ **Fixed** | **`SearchContext` query leaked between pages** | `usePathname` effect now resets query to `""` on every route change. |
+| ✅ **Fixed** | **No `loading.tsx` files** | Added for `/movies`, `/shows`, `/topimdb` — animated skeleton cards on navigation. |
+| ✅ **Fixed** | **Unused `interface.d.ts`** | Deleted — types already existed in `movie.ts`, `tv.ts`, `cast.ts`. |
+| 🔲 **Open** | **API calls from Client Components use internal `/api/*`** | Extra hop: Client → `/api/movies` → TMDB. Low priority while the architecture works. |
+| 🔲 **Open** | **Inconsistent caching** | No documented cache strategy per route. Add comments to each route handler. |
+| 🔲 **Open** | **Tailwind v4 config approach** | Verify no v3 patterns are mixed in. Low risk right now. |
 
 ### 6.3 UX Issues
 
-| Issue | Detail |
-|---|---|
-| **No skeleton loading** | Content jumps in — should use skeleton placeholders while data loads for better perceived performance. |
-| **Genre / Country menus don't filter content** | The mega menus list genres and countries but clicking them doesn't actually filter the movie/show list. They're purely decorative. |
-| **No image fallback for missing cast photos** | If `profile_path` is null, cast cards may render broken or empty. |
-| **Rating bar color is static** | The rating bar shows the same color regardless of score. A green/yellow/red gradient based on score would be more informative. |
-| **Mobile nav menu has no close-on-outside-click** | The hamburger menu stays open when the user taps outside it. |
+| Status | Issue | Detail |
+|---|---|---|
+| ✅ **Fixed** | **Rating bar color was static** | Now green (≥7), amber (4–7), red (<4) dynamically. |
+| ✅ **Fixed** | **Mobile nav had no close-on-outside-click** | `mousedown` listener on `document` closes it on outside tap. Also closes on route change. |
+| ✅ **Fixed** | **No skeleton loading** | `loading.tsx` files added for movies, shows, topimdb with `animate-pulse` card skeletons. |
+| ✅ **Was fine** | **No image fallback for missing cast photos** | Fallback `div` was already implemented in both detail pages. |
+| ✅ **Was fine** | **Genre/Country menus don't filter content** | Filtering was already wired up via `?genre=` and `?country=` URL params. |
 
 ---
 
@@ -349,18 +458,17 @@ Full detail page HTML → Browser
 - User profile page showing saved watchlists and ratings
 - TMDB supports linking user accounts via session tokens — you can delegate ratings and watchlists to TMDB itself
 
-#### Watchlist / Favourites
-- Save movies and shows to a personal list
-- Can use **localStorage** (no account needed) or a real database for persistence
-- Database options: **Supabase** (Postgres, free tier), **PlanetScale**, or **MongoDB Atlas**
+#### Watchlist / Favourites ✅ Done (localStorage)
+- ~~Save movies and shows to a personal list~~
+- localStorage implementation is live. Upgrade path: **Supabase** (Postgres, free tier) for cross-device persistence when auth is added.
 
-#### Movie / Show Trailers
-- TMDB provides `/movie/{id}/videos` — embed YouTube trailers on detail pages
-- A "Watch Trailer" modal or section would immediately improve detail pages
+#### Movie / Show Trailers ✅ Done
+- ~~TMDB provides `/movie/{id}/videos` — embed YouTube trailers on detail pages~~
+- YouTube trailer modal is live on all detail pages.
 
-#### Genre & Country Filtering
-- The Navbar already fetches genres and countries — wire them up to filter the browse pages
-- Add filter pills/chips on the movies/shows pages
+#### Genre & Country Filtering ✅ Already wired
+- Navbar genre/country links route to `/movies?genre=` and `/movies?country=` — filtering is active.
+- Remaining: extend to `/shows` page and add visible filter chips on the browse pages.
 
 #### Reviews & Ratings
 - Show TMDB community reviews on detail pages (`/movie/{id}/reviews`)
@@ -414,7 +522,7 @@ Full detail page HTML → Browser
 
 | Improvement | Approach |
 |---|---|
-| **Skeleton loaders** | Use Tailwind `animate-pulse` divs that match card dimensions |
+| ~~**Skeleton loaders**~~ ✅ Done | `loading.tsx` files added for movies, shows, topimdb with `animate-pulse` card skeletons |
 | **React Query / SWR** | Replace manual `useEffect` fetches with SWR for automatic caching, revalidation, and deduplication |
 | **Image optimization** | Add `sizes` prop to all `<Image>` components for proper responsive srcsets |
 | **OpenGraph / Twitter cards** | Add OG images on detail pages for social sharing previews |
@@ -429,13 +537,13 @@ Full detail page HTML → Browser
 
 ## 8. Security Concerns
 
-| Concern | Severity | Fix |
+| Concern | Severity | Status |
 |---|---|---|
-| `NEXT_PUBLIC_TMDB_TOKEN` is exposed client-side | **High** | Rename to `TMDB_TOKEN`, use only in Server Components and API routes |
-| No input sanitization on search query params | Medium | Sanitize and validate `query` and `page` params in API route handlers |
-| No rate limiting on internal API routes | Medium | Add Upstash or simple in-memory rate limiter |
-| No Content Security Policy headers | Low | Add CSP headers in `next.config.ts` via `headers()` |
-| Footer mentions 3rd-party hosting disclaimer | Info | Ensure ToS compliance with TMDB API usage terms |
+| ~~`NEXT_PUBLIC_TMDB_TOKEN` exposed client-side~~ | **High** | ✅ **Fixed** — renamed to `TMDB_TOKEN`, server-side only |
+| No input sanitization on search query params | Medium | 🔲 Open — validate `query` and `page` in API route handlers |
+| No rate limiting on internal API routes | Medium | 🔲 Open — add Upstash or in-memory rate limiter |
+| No Content Security Policy headers | Low | 🔲 Open — add CSP in `next.config.ts` via `headers()` |
+| Footer 3rd-party hosting disclaimer | Info | Ensure ToS compliance with TMDB API usage terms |
 
 ---
 
@@ -448,13 +556,14 @@ Full detail page HTML → Browser
 - Debounced search (400ms) with AbortController
 - `Promise.all()` for parallel API calls on homepage
 - TMDB page limit capped at 500 (API constraint)
+- **In-memory TMDB response cache (1-hour TTL)** — added May 2026; first load hits TMDB, all subsequent loads are instant for the lifetime of the server process
 
 ### Recommended Improvements
 
 | Optimization | Impact |
 |---|---|
 | Add `sizes` to all `<Image>` tags | Prevents downloading oversized images on mobile |
-| Use `loading.tsx` + Suspense boundaries | Enables streaming HTML for faster TTFB |
+| ~~Use `loading.tsx` + Suspense boundaries~~ ✅ Done | `loading.tsx` added for movies, shows, topimdb |
 | Implement SWR/React Query caching | Eliminates redundant fetches on back-navigation |
 | Add `<link rel="preconnect">` for TMDB image CDN | Reduces DNS lookup time for images |
 | Lazy-load below-the-fold sections on homepage | Reduces initial JS payload |
@@ -462,4 +571,4 @@ Full detail page HTML → Browser
 
 ---
 
-*This document was generated as of May 2026 against the `main` branch of RhinoMovies.*
+*Last updated: May 20, 2026 (Pass 2) — `main` branch. See [Fixes Applied](#fixes-applied-session-log) for full session history.*

@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 type SearchContextType = {
     query: string;
@@ -11,6 +12,11 @@ const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
 export const SearchProvider = ({ children }: { children: React.ReactNode }) => {
     const [query, setQuery] = useState("");
+    const pathname = usePathname();
+
+    useEffect(() => {
+        setQuery("");
+    }, [pathname]);
 
     return <SearchContext.Provider value={{ query, setQuery }}>{children}</SearchContext.Provider>;
 };

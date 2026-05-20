@@ -111,6 +111,15 @@ export function getMoviesByGenre(genreId: number, page = 1) {
 }
 
 /**
+ * Movie videos (trailers, teasers, etc.)
+ */
+export function getMovieVideos(id: string) {
+    return tmdbFetch<{ results: { key: string; site: string; type: string; official: boolean }[] }>(`/movie/${id}/videos`, {
+        params: { language: "en-US" },
+    });
+}
+
+/**
  * Movies by country (ISO 3166-1 code)
  */
 export function getMoviesByCountry(countryCode: string, page = 1) {
