@@ -10,6 +10,8 @@ import { getMovieById, getMovieCredits, getMovieVideos, getMovieRecommendations,
 import { LikeDislike } from "@/src/components/LikeDislike";
 import { WatchButton } from "@/src/components/WatchButton";
 import { FavouriteButton } from "@/src/components/FavouriteButton";
+import { CopyCardButton } from "@/src/components/CopyCardButton";
+import { HistoryTracker } from "@/src/components/HistoryTracker";
 import { StreamingProviders } from "@/src/components/StreamingProviders";
 import { MediaRow } from "@/src/components/MediaRow";
 import { MovieDetails, MovieCredits, Movie } from "@/src/types/movie";
@@ -163,7 +165,7 @@ export default async function MovieDetailsPage({ params }: PageProps) {
                             <p className="mt-1 text-center text-xs" style={{ color: "var(--detail-muted)" }}>
                                 {movie.vote_average.toFixed(1)} / 10
                             </p>
-                            <LikeDislike />
+                            <LikeDislike id={movie.id} type="movie" title={movie.title} poster_path={movie.poster_path} />
                         </div>
 
                         {/* Row 1 col 2: title + buttons */}
@@ -174,7 +176,18 @@ export default async function MovieDetailsPage({ params }: PageProps) {
                             <div className="flex flex-wrap gap-2">
                                 <WatchButton videoKey={trailerKey} />
                                 <FavouriteButton id={movie.id} type="movie" title={movie.title} poster_path={movie.poster_path} />
+                                <CopyCardButton
+                                    id={movie.id}
+                                    mediaType="movie"
+                                    title={movie.title}
+                                    year={movie.release_date?.split("-")[0] ?? ""}
+                                    rating={movie.vote_average}
+                                    runtime={movie.runtime}
+                                    genres={movie.genres.map((g) => g.name)}
+                                    overview={movie.overview}
+                                />
                             </div>
+                            <HistoryTracker id={movie.id} type="movie" title={movie.title} poster_path={movie.poster_path} />
                         </div>
 
                         {/* Row 2: full-width on mobile, col-2-only on sm+ */}
