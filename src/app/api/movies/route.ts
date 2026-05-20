@@ -14,7 +14,7 @@ export async function GET(req: Request) {
             const data = await searchMovies(query, page);
             return NextResponse.json({
                 results: data.results,
-                total_pages: Math.min(data.total_pages, 500)
+                total_pages: Math.min(data.total_pages ?? 1, 500)
             });
         }
 
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
 
         return NextResponse.json({
             results: [...d1.results, ...d2.results],
-            total_pages: Math.min(Math.ceil(d1.total_pages / 2), 250)
+            total_pages: Math.min(Math.ceil((d1.total_pages ?? 1) / 2), 250)
         });
     } catch (error) {
         console.error(error);
