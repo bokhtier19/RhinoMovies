@@ -34,6 +34,29 @@ _Add your own below this line:_
 
 ---
 
+### Session — May 20, 2026 (Pass 3 — Detail Page Enhancements)
+
+#### Fix 14 — Streaming availability on detail pages (`src/components/StreamingProviders.tsx`)
+Created `StreamingProviders` server component. Fetches `/movie/{id}/watch/providers` and `/tv/{id}/watch/providers` via new `getMovieWatchProviders` / `getTVWatchProviders` functions. Displays provider logos grouped as Stream / Rent / Buy with JustWatch attribution link. Returns `null` if no providers are available so the page is unchanged for titles with no data. Added `compact` prop — collapses to a single inline line (`"Where to Watch"` label + all logos in one row) for use inside the detail section alongside cast.
+
+#### Fix 15 — Similar / Recommended row on detail pages (`src/components/MediaRow.tsx`)
+Created `MediaRow` client component. Fetches recommendations and similar titles in parallel via new `getMovieRecommendations` / `getMovieSimilar` / `getTVRecommendations` / `getTVSimilar` functions. Deduplicates results (recommendations first), caps at 12 items. Renders a horizontally scrollable row of poster cards with rating badges, hover scale, and links to the correct detail page. Left/right chevron buttons (`hidden sm:flex`) let desktop users scroll without the bottom scrollbar, which is hidden via `scrollbar-width: none`. Mobile retains native touch scrolling.
+
+#### Fix 16 — New TMDB API functions (`src/lib/tmdb/movies.ts`, `src/lib/tmdb/tv.ts`)
+Added `getMovieRecommendations`, `getMovieSimilar`, `getMovieWatchProviders`, `getMovieVideos` to `movies.ts`.
+Added `getTVRecommendations`, `getTVSimilar`, `getTVWatchProviders`, `getTVVideos` to `tv.ts`.
+
+#### Fix 17 — New shared types (`src/types/common.ts`)
+Added `WatchProvider` and `WatchProvidersResponse` interfaces to `common.ts` so the watch-providers data shape is shared across movies and TV.
+
+#### Fix 18 — Detail page parallel data fetching (both `[id]/page.tsx` files)
+Both detail pages now run a 5-way `Promise.all` (credits, trailer video, recommendations, similar, watch providers) instead of the previous 2-way call. Each sub-fetch has its own `.catch(() => null)` so any single failure (e.g. no providers for this title) doesn't break the page. Country selection: US providers first, falls back to first available country.
+
+#### Fix 19 — Where to Watch placement (both detail pages)
+`StreamingProviders` (compact mode) is placed in the same layout column as the cast section, directly below it as its own div — parallel in the document flow, not in a separate full-width block outside the `<section>`. Layout is `space-y-*` stacked on all screen sizes, matching the existing mobile behaviour exactly.
+
+---
+
 ### Session — May 20, 2026 (Pass 2 — Section 6 Issues)
 
 #### Fix 4 — TMDB token security (`src/lib/tmdb/client.ts`, `.env.local`)
@@ -182,6 +205,8 @@ rhinomovies/
 │   │   ├── TrailerModal.tsx        # YouTube trailer iframe modal (Escape to close)
 │   │   ├── WatchButton.tsx         # Client button — opens TrailerModal or disabled if no trailer
 │   │   ├── FavouriteButton.tsx     # Client button — localStorage watchlist toggle with heart icon
+│   │   ├── StreamingProviders.tsx  # Provider logos (Stream/Rent/Buy) with JustWatch link; compact prop for inline use
+│   │   ├── MediaRow.tsx            # Client component — horizontal scroll row of poster cards with L/R nav buttons
 │   │   ├── ErrorBoundary.tsx       # React class error boundary with "Try again" recovery
 │   │   ├── Searchbar.tsx           # Debounced search input tied to SearchContext
 │   │   ├── Pagination.tsx          # Page controls with windowed page buttons
@@ -197,15 +222,15 @@ rhinomovies/
 │   ├── lib/
 │   │   └── tmdb/                   # TMDB API client layer
 │   │       ├── client.ts           # https.get wrapper — gzip decompress, in-memory cache, retry
-│   │       ├── movies.ts           # Movie API calls incl. getMovieVideos
-│   │       ├── tv.ts               # TV API calls incl. getTVVideos
+│   │       ├── movies.ts           # Movie API calls — details, credits, videos, recommendations, similar, watch providers
+│   │       ├── tv.ts               # TV API calls   — details, credits, videos, recommendations, similar, watch providers
 │   │       └── trending.ts         # Trending endpoint
 │   │
 │   └── types/                      # TypeScript type definitions
 │       ├── movie.ts                # Movie, MovieDetails, MovieCredits
 │       ├── tv.ts                   # TVShow, TVShowDetails, TVShowCredits
 │       ├── cast.ts                 # Cast member interface
-│       └── common.ts               # TMDBBase, MediaType, PaginatedResponse<T>
+│       └── common.ts               # TMDBBase, MediaType, PaginatedResponse<T>, WatchProvider, WatchProvidersResponse
 │
 ├── public/                         # Static assets
 ├── .env.local                      # TMDB_TOKEN (server-side only)
@@ -253,7 +278,9 @@ RootLayout (layout.tsx)
         │       ├── MovieDetailPage
         │       │   ├── WatchButton → TrailerModal (YouTube embed)
         │       │   ├── FavouriteButton (localStorage)
-        │       │   └── Cast list (with fallback avatars)
+        │       │   ├── Cast list (with fallback avatars)
+        │       │   ├── StreamingProviders (compact — inline below cast)
+        │       │   └── MediaRow "You Might Also Like" (recs + similar, L/R buttons)
         │       ├── ShowsPage
         │       │   ├── Searchbar
         │       │   ├── MovieCard[]
@@ -261,7 +288,9 @@ RootLayout (layout.tsx)
         │       └── ShowDetailPage
         │           ├── WatchButton → TrailerModal (YouTube embed)
         │           ├── FavouriteButton (localStorage)
-        │           └── Cast list (with fallback avatars)
+        │           ├── Cast list (with fallback avatars)
+        │           ├── StreamingProviders (compact — inline below cast)
+        │           └── MediaRow "You Might Also Like" (recs + similar, L/R buttons)
         └── Footer
 ```
 
@@ -343,20 +372,25 @@ Browser navigates to /movies/[id]
      ▼
 movies/[id]/page.tsx (Server)
      │
-     ▼
-Promise.all([
-  getMovieById(id),
-  getMovieCredits(id),  → cast list
-  getMovieVideos(id)    → first YouTube trailer key
-])
+     ├── getMovieById(id)           → title, overview, metadata (sequential — needed first)
+     │
+     └── Promise.all([
+           getMovieCredits(id),     → cast list
+           getMovieVideos(id),      → first YouTube trailer key
+           getMovieRecommendations(id), → related titles (priority)
+           getMovieSimilar(id),         → related titles (supplement)
+           getMovieWatchProviders(id),  → streaming/rent/buy per country
+         ])                         (all 5 in parallel, each .catch(() => null))
      │
      ▼
-TMDB API (fresh, no cache)
+TMDB API
      │
      ▼
 Full detail page HTML → Browser
-  WatchButton (client) receives trailerKey prop
-  FavouriteButton (client) reads/writes localStorage
+  WatchButton (client)         receives trailerKey prop
+  FavouriteButton (client)     reads/writes localStorage
+  StreamingProviders (server)  US providers, compact inline mode below cast
+  MediaRow (client)            deduped recs+similar (max 12), L/R scroll buttons
 ```
 
 ---
@@ -384,6 +418,8 @@ Full detail page HTML → Browser
 - **"Watch Trailer" button** — fetches YouTube trailer from TMDB `/videos`, opens in keyboard-dismissable modal. Greyed out if no trailer is found.
 - **"Add to Watchlist" button** — saves to `localStorage` with heart icon toggle. Persists across refreshes. No account required.
 - Rating bar color: green (≥7.0), amber (4.0–6.9), red (<4.0)
+- **Streaming availability** — "Where to Watch" shows provider logos (Stream / Rent / Buy) sourced from TMDB `/watch/providers`. Compact inline layout sits in the same column directly below cast. US providers shown first; falls back to first available country. Returns nothing if no provider data exists.
+- **"You Might Also Like" row** — horizontally scrollable row of up to 12 deduped recommendations + similar titles. Left/right chevron buttons on desktop for click-to-scroll; hidden on mobile where touch scrolling is used. Scrollbar hidden on all sizes.
 
 ### Navigation
 - Sticky navbar with scroll-hide behavior
@@ -483,17 +519,19 @@ Full detail page HTML → Browser
 - Sort by: popularity, rating, release date, revenue
 - Multi-genre filter (e.g., Action + Thriller)
 
-#### "Similar" / "Recommended" Section
-- TMDB exposes `/movie/{id}/similar` and `/movie/{id}/recommendations`
-- Show these on detail pages as horizontal scrollable rows
+#### "Similar" / "Recommended" Section ✅ Done
+- ~~TMDB exposes `/movie/{id}/similar` and `/movie/{id}/recommendations`~~
+- ~~Show these on detail pages as horizontal scrollable rows~~
+- `MediaRow` component live on both detail pages. Deduped recs + similar, max 12, L/R scroll buttons on desktop.
 
 #### Collections & Franchises
 - TMDB supports movie collections (e.g., the Marvel or Harry Potter franchise)
 - Link related movies together on detail pages
 
-#### Streaming Availability
-- TMDB provides `/movie/{id}/watch/providers` with streaming platform data per country
-- Show Netflix/Disney+/Prime badges on detail and card views
+#### Streaming Availability ✅ Done
+- ~~TMDB provides `/movie/{id}/watch/providers` with streaming platform data per country~~
+- ~~Show Netflix/Disney+/Prime badges on detail and card views~~
+- `StreamingProviders` component live on both detail pages in compact inline mode below cast. Upgrade path: show provider badges on `MovieCard` as well.
 
 #### Progressive Web App (PWA)
 - Add `manifest.json` and a service worker
@@ -571,4 +609,4 @@ Full detail page HTML → Browser
 
 ---
 
-*Last updated: May 20, 2026 (Pass 2) — `main` branch. See [Fixes Applied](#fixes-applied-session-log) for full session history.*
+*Last updated: May 20, 2026 (Pass 3) — `main` branch. See [Fixes Applied](#fixes-applied-session-log) for full session history.*

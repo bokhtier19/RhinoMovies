@@ -1,6 +1,6 @@
 import {tmdbFetch} from "./client";
 import {TVShow, TVShowCredits, TVShowDetails} from "@/src/types/tv";
-import {PaginatedResponse} from "@/src/types/common";
+import {PaginatedResponse, WatchProvidersResponse} from "@/src/types/common";
 
 /**
  * Discover TV shows
@@ -70,6 +70,31 @@ export function getOnTheAirTVShows(page = 1) {
             page
         }
     });
+}
+
+/**
+ * Recommended TV shows (TMDB personalised)
+ */
+export function getTVRecommendations(id: string) {
+    return tmdbFetch<PaginatedResponse<TVShow>>(`/tv/${id}/recommendations`, {
+        params: { language: "en-US" },
+    });
+}
+
+/**
+ * Similar TV shows (keyword/genre based)
+ */
+export function getTVSimilar(id: string) {
+    return tmdbFetch<PaginatedResponse<TVShow>>(`/tv/${id}/similar`, {
+        params: { language: "en-US" },
+    });
+}
+
+/**
+ * Streaming / rent / buy providers per country
+ */
+export function getTVWatchProviders(id: string) {
+    return tmdbFetch<WatchProvidersResponse>(`/tv/${id}/watch/providers`);
 }
 
 /**

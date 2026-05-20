@@ -6,11 +6,14 @@ import { FaPlayCircle } from "react-icons/fa";
 import { BsCameraReelsFill } from "react-icons/bs";
 import { HiChevronRight } from "react-icons/hi";
 
-import { getMovieById, getMovieCredits, getMovieVideos } from "@/src/lib/tmdb/movies";
+import { getMovieById, getMovieCredits, getMovieVideos, getMovieRecommendations, getMovieSimilar, getMovieWatchProviders } from "@/src/lib/tmdb/movies";
 import { LikeDislike } from "@/src/components/LikeDislike";
 import { WatchButton } from "@/src/components/WatchButton";
 import { FavouriteButton } from "@/src/components/FavouriteButton";
-import { MovieDetails, MovieCredits } from "@/src/types/movie";
+import { StreamingProviders } from "@/src/components/StreamingProviders";
+import { MediaRow } from "@/src/components/MediaRow";
+import { MovieDetails, MovieCredits, Movie } from "@/src/types/movie";
+import { WatchProvider } from "@/src/types/common";
 import { Cast } from "@/src/types/cast";
 
 interface PageProps {
@@ -52,14 +55,30 @@ export default async function MovieDetailsPage({ params }: PageProps) {
 
     let credits: MovieCredits | null = null;
     let trailerKey: string | null = null;
+    let relatedItems: Movie[] = [];
+    let providerData: { link: string; flatrate?: WatchProvider[]; rent?: WatchProvider[]; buy?: WatchProvider[] } | undefined;
+
     try {
-        [credits] = await Promise.all([
+        const [c, , recsResult, similarResult, providersResult] = await Promise.all([
             getMovieCredits(id).catch(() => null),
             getMovieVideos(id).then((v) => {
                 const trailer = v.results.find((r) => r.site === "YouTube" && r.type === "Trailer") ?? v.results.find((r) => r.site === "YouTube");
                 trailerKey = trailer?.key ?? null;
-            }).catch(() => {}),
+            }).catch(() => null),
+            getMovieRecommendations(id).catch(() => null),
+            getMovieSimilar(id).catch(() => null),
+            getMovieWatchProviders(id).catch(() => null),
         ]);
+        credits = c;
+
+        const seen = new Set<number>();
+        for (const item of [...(recsResult?.results ?? []), ...(similarResult?.results ?? [])]) {
+            if (!seen.has(item.id)) { seen.add(item.id); relatedItems.push(item); }
+        }
+        relatedItems = relatedItems.slice(0, 12);
+
+        const pr = providersResult?.results;
+        providerData = pr?.["US"] ?? (pr ? Object.values(pr)[0] : undefined);
     } catch {
         credits = null;
     }
@@ -232,11 +251,26 @@ export default async function MovieDetailsPage({ params }: PageProps) {
                                     </div>
                                 </div>
                             )}
+
+                            {/* Where to Watch — same column as cast, below */}
+                            {providerData && (
+                                <StreamingProviders
+                                    flatrate={providerData.flatrate}
+                                    rent={providerData.rent}
+                                    buy={providerData.buy}
+                                    link={providerData.link}
+                                    compact
+                                />
+                            )}
                         </div>
 
                     </div>
                 </div>
             </section>
+
+            <div style={{ backgroundColor: "var(--detail-bg)" }}>
+                <MediaRow title="You Might Also Like" items={relatedItems} mediaType="movie" />
+            </div>
         </div>
     );
 }

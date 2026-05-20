@@ -1,6 +1,6 @@
 import {tmdbFetch} from "./client";
 import type {Movie, MovieDetails} from "@/src/types/movie";
-import type {PaginatedResponse} from "@/src/types/common";
+import type {PaginatedResponse, WatchProvidersResponse} from "@/src/types/common";
 
 /**
  * Discover movies
@@ -108,6 +108,31 @@ export function getMoviesByGenre(genreId: number, page = 1) {
             sort_by: "popularity.desc"
         }
     });
+}
+
+/**
+ * Recommended movies (TMDB personalised)
+ */
+export function getMovieRecommendations(id: string) {
+    return tmdbFetch<PaginatedResponse<Movie>>(`/movie/${id}/recommendations`, {
+        params: { language: "en-US" },
+    });
+}
+
+/**
+ * Similar movies (keyword/genre based)
+ */
+export function getMovieSimilar(id: string) {
+    return tmdbFetch<PaginatedResponse<Movie>>(`/movie/${id}/similar`, {
+        params: { language: "en-US" },
+    });
+}
+
+/**
+ * Streaming / rent / buy providers per country
+ */
+export function getMovieWatchProviders(id: string) {
+    return tmdbFetch<WatchProvidersResponse>(`/movie/${id}/watch/providers`);
 }
 
 /**
