@@ -10,6 +10,8 @@ import { getTVShowById, getTVCredits, getTVVideos, getTVRecommendations, getTVSi
 import { LikeDislike } from "@/src/components/LikeDislike";
 import { WatchButton } from "@/src/components/WatchButton";
 import { FavouriteButton } from "@/src/components/FavouriteButton";
+import { CopyCardButton } from "@/src/components/CopyCardButton";
+import { HistoryTracker } from "@/src/components/HistoryTracker";
 import { StreamingProviders } from "@/src/components/StreamingProviders";
 import { MediaRow } from "@/src/components/MediaRow";
 import { TVShowDetails, TVShowCredits, TVShow } from "@/src/types/tv";
@@ -165,7 +167,7 @@ export default async function TVShowDetailsPage({ params }: PageProps) {
                             <p className="mt-1 text-center text-xs" style={{ color: "var(--detail-muted)" }}>
                                 {show.vote_average.toFixed(1)} / 10
                             </p>
-                            <LikeDislike />
+                            <LikeDislike id={show.id} type="tv" title={show.name} poster_path={show.poster_path} />
                         </div>
 
                         {/* Row 1 col 2: title + buttons */}
@@ -176,7 +178,18 @@ export default async function TVShowDetailsPage({ params }: PageProps) {
                             <div className="flex flex-wrap gap-2">
                                 <WatchButton videoKey={trailerKey} />
                                 <FavouriteButton id={show.id} type="tv" title={show.name} poster_path={show.poster_path} />
+                                <CopyCardButton
+                                    id={show.id}
+                                    mediaType="tv"
+                                    title={show.name}
+                                    year={show.first_air_date?.split("-")[0] ?? ""}
+                                    rating={show.vote_average}
+                                    seasons={show.number_of_seasons}
+                                    genres={show.genres.map((g) => g.name)}
+                                    overview={show.overview}
+                                />
                             </div>
+                            <HistoryTracker id={show.id} type="tv" title={show.name} poster_path={show.poster_path} />
                         </div>
 
                         {/* Row 2: full-width on mobile, col-2-only on sm+ */}

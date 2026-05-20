@@ -7,6 +7,11 @@ import {Analytics} from "@vercel/analytics/next";
 import {ThemeProvider} from "next-themes";
 import ScrollToTop from "@/src/components/ScrollToTop";
 import { ErrorBoundary } from "@/src/components/ErrorBoundary";
+import { SessionProvider } from "@/src/components/SessionProvider";
+import { GuestProvider } from "@/src/context/GuestContext";
+import { AuthModalProvider } from "@/src/context/AuthModalContext";
+import { AuthModal } from "@/src/components/AuthModal";
+import { GuestBanner } from "@/src/components/GuestBanner";
 
 export const metadata: Metadata = {
     title: "RhinoMovies",
@@ -23,17 +28,25 @@ export default function RootLayout({
         <html>
             <body>
                 <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-                    <SearchProvider>
-                        <Navbar />
-                        <ErrorBoundary>
-                            <main className="max-w-[1920px] mx-auto w-full">
-                                {children}
-                            </main>
-                        </ErrorBoundary>
-                        <ScrollToTop />
-                        <Footer />
-                        <Analytics />
-                    </SearchProvider>
+                    <SessionProvider>
+                        <GuestProvider>
+                            <AuthModalProvider>
+                                <SearchProvider>
+                                    <Navbar />
+                                    <GuestBanner />
+                                    <ErrorBoundary>
+                                        <main className="max-w-[1920px] mx-auto w-full">
+                                            {children}
+                                        </main>
+                                    </ErrorBoundary>
+                                    <ScrollToTop />
+                                    <Footer />
+                                    <Analytics />
+                                    <AuthModal />
+                                </SearchProvider>
+                            </AuthModalProvider>
+                        </GuestProvider>
+                    </SessionProvider>
                 </ThemeProvider>
             </body>
         </html>
