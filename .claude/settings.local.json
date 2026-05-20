@@ -18,7 +18,15 @@
       "PowerShell(Get-Process *)",
       "Bash(echo \"PID: $!\")",
       "Bash(curl -s http://localhost:3000/)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(git commit -m ' *)",
+      "Bash(vercel integration *)",
+      "Bash(vercel env *)",
+      "Bash(vercel logs *)",
+      "Bash(vercel domains *)",
+      "Bash(vercel inspect *)",
+      "Bash(vercel --prod)",
+      "Bash(npx vercel *)"
     ]
   }
 }

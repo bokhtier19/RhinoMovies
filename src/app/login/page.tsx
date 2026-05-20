@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
-import { auth, signIn } from "@/src/auth";
+import { auth } from "@/src/auth";
 import { PiFilmReelFill } from "react-icons/pi";
-import { FcGoogle } from "react-icons/fc";
 import Link from "next/link";
 import { GuestLoginButton } from "@/src/components/GuestLoginButton";
+import { GoogleSignInButton } from "@/src/components/GoogleSignInButton";
 
 export const metadata = { title: "Sign In | RhinoMovies" };
 
@@ -33,22 +33,7 @@ export default async function LoginPage() {
                         </p>
                     </div>
 
-                    <form
-                        action={async () => {
-                            "use server";
-                            await signIn("google", { redirectTo: "/" });
-                        }}
-                        className="w-full"
-                    >
-                        <button
-                            type="submit"
-                            className="flex w-full items-center justify-center gap-3 rounded-xl px-5 py-3 text-sm font-semibold text-gray-900 transition-opacity hover:opacity-90"
-                            style={{ backgroundColor: "#ffffff" }}
-                        >
-                            <FcGoogle size={20} />
-                            Continue with Google
-                        </button>
-                    </form>
+                    <GoogleSignInButton />
 
                     <div className="flex w-full items-center gap-3">
                         <div className="flex-1 border-t" style={{ borderColor: "var(--border)" }} />
