@@ -52,12 +52,57 @@ export function getTVCredits(id: string) {
 /**
  * Trending TV shows (daily)
  */
-export function getTrendingTVShows() {
+export function getTrendingTVShows(page = 1) {
     return tmdbFetch<PaginatedResponse<TVShow>>("/trending/tv/day", {
         params: {
-            language: "en-US"
+            language: "en-US",
+            page
         }
     });
+}
+
+export function getTVShowsByGenre(genreId: number, page = 1) {
+    return tmdbFetch<PaginatedResponse<TVShow>>("/discover/tv", {
+        params: {
+            with_genres: genreId,
+            page,
+            language: "en-US",
+            sort_by: "popularity.desc"
+        }
+    });
+}
+
+export function getTVShowsByCountry(countryCode: string, page = 1) {
+    return tmdbFetch<PaginatedResponse<TVShow>>("/discover/tv", {
+        params: {
+            with_origin_country: countryCode,
+            page,
+            language: "en-US",
+            sort_by: "popularity.desc"
+        }
+    });
+}
+
+/**
+ * General discover with all filter/sort params combined
+ */
+export function discoverTVFiltered(p: {
+    genres?: string;
+    country?: string;
+    year?: string;
+    sortBy?: string;
+    page?: number;
+}) {
+    const params: Record<string, string | number | undefined> = {
+        language: "en-US",
+        page: p.page ?? 1,
+    };
+    if (p.genres) params.with_genres = p.genres;
+    if (p.country) params.with_origin_country = p.country;
+    if (p.year) params.first_air_date_year = p.year;
+    if (p.sortBy) params.sort_by = p.sortBy;
+    if (p.sortBy?.startsWith("vote_average")) params["vote_count.gte"] = 50;
+    return tmdbFetch<PaginatedResponse<TVShow>>("/discover/tv", { params });
 }
 
 /**

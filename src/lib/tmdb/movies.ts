@@ -64,10 +64,11 @@ export function getTopRatedMovies(page = 2) {
 /**
  * Trending movies (weekly)
  */
-export function getTrendingMovies() {
+export function getTrendingMovies(page = 1) {
     return tmdbFetch<PaginatedResponse<Movie>>("/trending/movie/week", {
         params: {
-            language: "en-US"
+            language: "en-US",
+            page
         }
     });
 }
@@ -156,4 +157,26 @@ export function getMoviesByCountry(countryCode: string, page = 1) {
             sort_by: "popularity.desc"
         }
     });
+}
+
+/**
+ * General discover with all filter/sort params combined
+ */
+export function discoverMoviesFiltered(p: {
+    genres?: string;
+    country?: string;
+    year?: string;
+    sortBy?: string;
+    page?: number;
+}) {
+    const params: Record<string, string | number | undefined> = {
+        language: "en-US",
+        page: p.page ?? 1,
+    };
+    if (p.genres) params.with_genres = p.genres;
+    if (p.country) params.with_origin_country = p.country;
+    if (p.year) params.primary_release_year = p.year;
+    if (p.sortBy) params.sort_by = p.sortBy;
+    if (p.sortBy?.startsWith("vote_average")) params["vote_count.gte"] = 100;
+    return tmdbFetch<PaginatedResponse<Movie>>("/discover/movie", { params });
 }

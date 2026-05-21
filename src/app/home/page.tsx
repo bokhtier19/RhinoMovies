@@ -43,16 +43,16 @@ export default async function HomePage() {
     return (
         <div className="px-2 md:px-8 lg:px-16 py-8 min-h-screen flex flex-col gap-10">
             {trending.length > 0 && (
-                <CategorySection title="Trending Movies & TV Shows" items={trending} showMoreHref="/" moreLabel="All Trending" />
+                <CategorySection title="Trending Movies & TV Shows" items={trending} showMoreHref="/movies?category=trending" moreLabel="All Trending" />
             )}
             {latestMovies.length > 0 && (
-                <CategorySection title="Latest Movies" items={latestMovies} showMoreHref="/movies" moreLabel="All Movies" />
+                <CategorySection title="Latest Movies" items={latestMovies} showMoreHref="/movies?category=latest" moreLabel="Latest Movies" />
             )}
             {latestShows.length > 0 && (
-                <CategorySection title="Latest TV Shows" items={latestShows} showMoreHref="/shows" moreLabel="All TV Shows" />
+                <CategorySection title="Latest TV Shows" items={latestShows} showMoreHref="/shows?category=latest" moreLabel="Latest TV Shows" />
             )}
             {upcomingMovies.length > 0 && (
-                <CategorySection title="Upcoming Movies" items={upcomingMovies} showMoreHref="/movies" moreLabel="Upcoming" />
+                <CategorySection title="Upcoming Movies" items={upcomingMovies} showMoreHref="/movies?category=upcoming" moreLabel="Upcoming" />
             )}
         </div>
     );
